@@ -14,9 +14,13 @@ class Town
 
   static Config: Schema<Town.Config> = Schema.object({});
 
+  ctx: Context;
+  config: Town.Config;
+
   constructor(ctx: Context, config: Town.Config)
   {
-    console.log('Town plugin initialized');
+    this.ctx = ctx;
+    this.config = config;
   }
 }
 

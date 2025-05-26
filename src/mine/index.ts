@@ -14,9 +14,13 @@ class Mine
 
   static Config: Schema<Mine.Config> = Schema.object({});
 
+  ctx: Context;
+  config: Mine.Config;
+
   constructor(ctx: Context, config: Mine.Config)
   {
-    console.log('Mine plugin initialized');
+    this.ctx = ctx;
+    this.config = config;
   }
 }
 

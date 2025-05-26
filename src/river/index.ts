@@ -14,9 +14,13 @@ class River
 
   static Config: Schema<River.Config> = Schema.object({});
 
+  ctx: Context;
+  config: River.Config;
+
   constructor(ctx: Context, config: River.Config)
   {
-    console.log('River plugin initialized');
+    this.ctx = ctx;
+    this.config = config;
   }
 }
 
