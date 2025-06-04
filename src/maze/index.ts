@@ -17,6 +17,11 @@ declare module 'koishi' {
       members: string[]; // 成员列表
       status: 'waiting' | 'in-progress' | 'completed'; // 组队状态
     };
+
+    mazeUserParty: {
+      id: string; // 用户ID
+      partyId: number; // 组队ID
+    };
   }
 }
 
@@ -43,6 +48,11 @@ class Maze
       members: 'array',
       status: 'string',
     });
+
+    ctx.model.extend('mazeUserParty', {
+      id: 'string',
+      partyId: 'unsigned',
+    });
   }
 
   start()
@@ -66,6 +76,11 @@ class Maze
         status: 'waiting',
       });
 
+      await this.ctx.database.create('mazeUserParty', {
+        id: uid,
+        partyId: partyId,
+      });
+
       return [h.at(v.session.username), `组队创建成功，组队ID为 ${partyId}，请输入 "maze.jp <组队ID>" 加入组队`];
     });
 
@@ -82,14 +97,55 @@ class Maze
         return [h.at(v.session.username), '迷宫组队ID不存在，请检查后重新输入'];
       }
 
+      const uid = v.session.userId;
+
       const party = dataList[0];
-      party.members.push(v.session.userId);
+
+      if (party.members.includes(uid))
+      {
+        return [h.at(v.session.username), '你已经在这个组队中了'];
+      }
+      party.members.push();
+      await this.ctx.database.create('mazeUserParty', {
+        id: uid,
+        partyId: partyid,
+      });
+
       await this.ctx.database.set('mazeParty', { id: partyid }, { members: party.members });
+
+      return [h.at(v.session.username), `加入组队成功，组队ID为 ${partyid}，当前成员：${party.members.join(', ')}`];
     });
 
     this.ctx.command('maze.leave').alias('退出迷宫组队').action(async v =>
     {
+      const uid = v.session.userId;
+      const dataList = await this.ctx.database.get('mazeUserParty', { id: uid });
+      if (dataList.length <= 0)
+      {
+        return [h.at(v.session.username), '你不在任何组队中'];
+      }
 
+      await this.ctx.database.remove('mazeUserParty', { id: uid });
+
+      const partyId = dataList[0].partyId;
+      const partyList = await this.ctx.database.get('mazeParty', { id: partyId });
+
+      if (partyList.length <= 0)
+      {
+        return [h.at(v.session.username), '组队不存在，请检查后重新输入'];
+      }
+
+      const party = partyList[0];
+
+      party.members = party.members.filter(member => member !== uid);
+      if (party.members.length === 0)
+      {
+        await this.ctx.database.remove('mazeParty', { id: partyId });
+      } else {
+        await this.ctx.database.set('mazeParty', { id: partyId }, { members: party.members });
+      }
+
+      return [h.at(v.session.username), `退出组队成功，当前组队成员：${party.members.join(', ')}`];
     });
 
     this.ctx.command('maze.start').alias('开始迷宫').action(async v =>
