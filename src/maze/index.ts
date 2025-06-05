@@ -1,5 +1,6 @@
 import { Context, h, Schema } from 'koishi';
 import { User } from './user';
+import { Monster } from './monster';
 
 namespace Maze
 {
@@ -179,10 +180,11 @@ class Maze
         }
       }
 
+      let playerIdList = [];
       if (single)
       {
         // 处理单人模式逻辑
-        return [h.at(v.session.username), '单人模式开始，祝你好运！'];
+        playerIdList = [uid];
       } else
       {
         const partyId = dataList[0].partyId;
@@ -200,13 +202,42 @@ class Maze
         }
         await this.ctx.database.set('mazeParty', { id: partyId }, { status: 'inGame' });
 
+        playerIdList = party.members;
       }
-    });
 
-    this.ctx.command('maze.test').action(async v =>{
-      new User(v.session.userId, this.ctx)
-    })
+      const userDataList = this.getUserDataList(playerIdList);
+
+      this.createMonster(userDataList);
+    });
   }
+
+  // 获取用户数据列表
+  getUserDataList(playerIdList: string[])
+  {
+    let userDataList: User[] = [];
+
+    for (const playerId of playerIdList)
+    {
+      const user = new User(playerId, this.ctx);
+      userDataList.push(user);
+    }
+
+    return userDataList;
+  }
+
+  // 创建怪物与每个怪物的战斗序列
+  createMonster(userDataList: User[])
+  {
+    // 这里可以添加创建怪物的逻辑
+    // 每个怪物可以有不同的属性和技能
+    // 返回一个包含所有怪物的列表
+    let monsterList = [];
+    for (const user of userDataList) {
+      const monster = new Monster(user, this.ctx);
+      monsterList.push(monster);
+    }
+  }
+
 }
 
 export default Maze;
