@@ -1,4 +1,5 @@
 import { Context, h, Schema } from 'koishi';
+import { User } from './user';
 
 namespace Maze
 {
@@ -15,7 +16,7 @@ declare module 'koishi' {
       id: number; // 组队ID
       owner: string; // 创建者
       members: string[]; // 成员列表
-      status: 'waiting' | 'in-progress' | 'completed'; // 组队状态
+      status: 'waiting' | 'inGame' | 'completed'; // 组队状态
     };
 
     mazeUserParty: {
@@ -106,6 +107,12 @@ class Maze
         return [h.at(v.session.username), '你已经在这个组队中了'];
       }
       party.members.push();
+
+      if (party.members.length > 4)
+      {
+        return [h.at(v.session.username), '组队人数已满，无法加入'];
+      }
+
       await this.ctx.database.create('mazeUserParty', {
         id: uid,
         partyId: partyid,
@@ -141,7 +148,8 @@ class Maze
       if (party.members.length === 0)
       {
         await this.ctx.database.remove('mazeParty', { id: partyId });
-      } else {
+      } else
+      {
         await this.ctx.database.set('mazeParty', { id: partyId }, { members: party.members });
       }
 
@@ -150,8 +158,54 @@ class Maze
 
     this.ctx.command('maze.start').alias('开始迷宫').action(async v =>
     {
+      const uid = v.session.userId;
+      const dataList = await this.ctx.database.get('mazeUserParty', { id: uid });
+      let single = false;
 
+      if (dataList.length <= 0)
+      {
+        v.session.send([h.at(v.session.username), '你不在任何组队中，是否进入单人模式?(请在5秒内输入yes或者no)']);
+
+        const inputData = await v.session.prompt(5000);
+        if (inputData == 'yes')
+        {
+          single = true;
+        } else if (inputData == 'no')
+        {
+          return [h.at(v.session.username), '你放弃进入迷宫'];
+        } else
+        {
+          return [h.at(v.session.username), '输入无效，请重新输入'];
+        }
+      }
+
+      if (single)
+      {
+        // 处理单人模式逻辑
+        return [h.at(v.session.username), '单人模式开始，祝你好运！'];
+      } else
+      {
+        const partyId = dataList[0].partyId;
+        const partyList = await this.ctx.database.get('mazeParty', { id: partyId });
+
+        if (partyList.length <= 0)
+        {
+          return [h.at(v.session.username), '组队不存在，请检查后重新输入'];
+        }
+
+        const party = partyList[0];
+        if (party.status !== 'waiting')
+        {
+          return [h.at(v.session.username), '组队状态不正确，无法开始迷宫'];
+        }
+        await this.ctx.database.set('mazeParty', { id: partyId }, { status: 'inGame' });
+
+      }
     });
+
+    this.ctx.command('maze.test').action(async v =>{
+      new User(v.session.userId, this.ctx)
+    })
   }
 }
 

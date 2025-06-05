@@ -15,7 +15,7 @@ const pluginList = {
   mine: mine,
   river: river,
   town: town
-}
+};
 
 const botConfig = {
   "maze": ["60a7b94c223eb"],
@@ -24,15 +24,17 @@ const botConfig = {
   "town": ["60a7b94c223eb"]
 };
 
+export const host = 'http://127.0.0.1:17515';
+
 export function apply(ctx: Context)
 {
 
   ctx.bots.forEach((bot) =>
   {
-    const botId = bot.user.id
-    for(let key in botConfig)
+    const botId = bot.user.id;
+    for (let key in botConfig)
     {
-      if(botConfig[key].includes(botId))
+      if (botConfig[key].includes(botId))
       {
         ctx.plugin(pluginList[key]);
       }
