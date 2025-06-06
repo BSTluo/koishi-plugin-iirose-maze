@@ -21,15 +21,18 @@ export class Monster
   shieldValue: number; // 护盾值
   shieldBreak: number; // 护盾破坏力
   userList: User[];
+  userListClass: UserList;
 
   constructor(user: User, ctx: Context, userList: User[])
   {
     this.ctx = ctx;
-    this.initialize();
     // 怪物以每5级作为一个分水岭
     const level = Math.floor(user.level / 5);
     this.level = level * 5;
     this.userList = userList; // 用户列表
+    const userListClass = new UserList(this.userList, this.ctx);
+    this.userListClass = userListClass;
+    this.initialize();
   }
 
   private async initialize()
@@ -59,7 +62,7 @@ export class Monster
     this.hp = this.hp + Math.floor(Math.random() * this.level); // 怪物生命值随机增加
   }
 
-  public useSkill()
+  public async useSkill(user: User)
   {
     // 随机使用一种技能
     // 1. 物理攻击
@@ -67,24 +70,28 @@ export class Monster
     // 3. 格挡
     // 4. 弹反
 
-    const skillIndex = Math.floor(Math.random() * 4);
+    const skillIndex = Math.floor(Math.random() * 100);
 
-    switch (skillIndex)
+    switch (true)
     {
-      case 0: {
-        this.physicalAttackSkill();
+      case (skillIndex >= 0 && skillIndex < 45): {
+        await this.physicalAttackSkill();
+        return;
       }
 
-      case 1: {
-
+      case (skillIndex >= 45 && skillIndex < 90): {
+        await this.magicAttackSkill();
+        return;
       }
 
-      case 2: {
-
+      case (skillIndex >= 90 && skillIndex < 97): {
+        this.blockSkill();
+        return;
       }
 
-      case 3: {
-
+      case (skillIndex >= 97 && skillIndex <= 100): {
+        await this.parrySkill(user);
+        return;
       }
 
       default: {
@@ -94,9 +101,9 @@ export class Monster
   }
 
   // 物理攻击
-  public physicalAttackSkill()
+  private async physicalAttackSkill()
   {
-    const userListClass = new UserList(this.userList, this.ctx);
+    const userListClass = this.userListClass;
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
 
     if (!minHpUser) return;
@@ -142,12 +149,12 @@ export class Monster
     if (userListClass.isDie())
     {
       minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-
+      await userListClass.killParty();
     }
   }
 
   // 魔法攻击
-  public magicAttackSkill()
+  private async magicAttackSkill()
   {
     const userListClass = new UserList(this.userList, this.ctx);
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
@@ -192,17 +199,46 @@ export class Monster
       minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${minHpUser.hp}`]);
     }
 
-    userListClass.isDie() && minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-
+    if (userListClass.isDie())
+    {
+      minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
+      await userListClass.killParty();
+    }
   }
 
   // 格挡
   public blockSkill()
   {
+    // 使用格挡后，血量减少0.05%，最低减少10点
+    const less = Math.floor(this.hp * 0.05);
+    this.hp -= less > 10 ? less : 10;
+
   }
 
   // 弹反
-  public parrySkill()
+  public async parrySkill(user: User)
   {
+    const userListClass = this.userListClass;
+    // 速度越高，弹反伤害越高
+    user.hp -= this.speed * 0.3;
+
+    if (user.hp <= 0)
+    {
+      user.hp = 0;
+      // 用户死亡逻辑
+      user.status = 'inGame-die';
+      // 更新用户状态
+      user.session.send([h.at(user.session.username), `被 ${this.name} 使用弹反攻击，死亡。`]);
+    } else
+    {
+      // 更新用户数据
+      user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${user.hp}`]);
+    }
+
+    if (userListClass.isDie())
+    {
+      user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
+      await userListClass.killParty();
+    }
   }
 }
