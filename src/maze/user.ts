@@ -36,10 +36,10 @@ export class User
 
   private async initialize()
   {
-    let userData;
+    let userData: User;
     try
     {
-      userData = await (await this.ctx.http.post(`${host}/getUser`, { id: this.playerId }));
+      userData = await this.ctx.http.post(`${host}/getUser`, { id: this.playerId });
     } catch (err)
     {
       throw '无法获取用户信息' + err;
