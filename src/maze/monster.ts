@@ -1,4 +1,4 @@
-import { Context } from "koishi";
+import { Context, h } from "koishi";
 import { User } from "./user";
 import { host } from "..";
 import { UserList } from "./userList";
@@ -72,7 +72,7 @@ export class Monster
     switch (skillIndex)
     {
       case 0: {
-
+        this.physicalAttackSkill();
       }
 
       case 1: {
@@ -96,8 +96,8 @@ export class Monster
   // 物理攻击
   public physicalAttackSkill()
   {
-    const userListClass = new UserList(this.userList);
-    const minHpUser = userListClass.getMinHpUser();
+    const userListClass = new UserList(this.userList, this.ctx);
+    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
 
     if (!minHpUser) return;
 
@@ -117,6 +117,10 @@ export class Monster
     if (userActualShieldValue <= 0)
     {
       minHpUser.shieldValue = 0;
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾，护盾清空。`]);
+    } else
+    {
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
@@ -126,20 +130,70 @@ export class Monster
     {
       minHpUser.hp = 0;
       // 用户死亡逻辑
-      this.ctx.logger.info(`${minHpUser.playerId} 被 ${this.name} 击败`);
+      minHpUser.status = 'inGame-die';
+      // 更新用户状态
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，死亡。`]);
     } else
     {
       // 更新用户数据
-      this.ctx.logger.info(`${minHpUser.playerId} 被 ${this.name} 攻击，剩余生命值：${minHpUser.hp}`);
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余生命值：${minHpUser.hp}`]);
     }
 
+    if (userListClass.isDie())
+    {
+      minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
+
+    }
   }
 
   // 魔法攻击
   public magicAttackSkill()
   {
-    const userListClass = new UserList(this.userList);
-    const minHpUser = userListClass.getMinHpUser();
+    const userListClass = new UserList(this.userList, this.ctx);
+    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
+
+    if (!minHpUser) return;
+
+    // 计算怪物魔法攻击伤害(基础魔法攻击力+暴击伤害)
+    const monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    // 计算怪物破盾能力(基础魔法攻击力*护盾破坏值)
+    const monsterShieldBreak = this.magicAttack * this.shieldBreak;
+
+    // 计算用户魔法防御
+    const userDefense = minHpUser.magicDefense;
+    // 计算用户护盾值
+    const userShieldValue = minHpUser.shieldValue;
+
+    // 计算用户实际护盾值
+    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+
+    if (userActualShieldValue <= 0)
+    {
+      minHpUser.shieldValue = 0;
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾，护盾清空。`]);
+    } else
+    {
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
+    }
+
+    // 计算用户实际伤害
+    minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
+
+    if (minHpUser.hp <= 0)
+    {
+      minHpUser.hp = 0;
+      // 用户死亡逻辑
+      minHpUser.status = 'inGame-die';
+      // 更新用户状态
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，死亡。`]);
+    } else
+    {
+      // 更新用户数据
+      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${minHpUser.hp}`]);
+    }
+
+    userListClass.isDie() && minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
+
   }
 
   // 格挡

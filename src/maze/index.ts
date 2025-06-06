@@ -1,4 +1,4 @@
-import { Context, h, Schema } from 'koishi';
+import { Context, h, Schema, Session } from 'koishi';
 import { User } from './user';
 import { Monster } from './monster';
 
@@ -13,20 +13,22 @@ namespace Maze
 declare module 'koishi' {
   interface Tables
   {
-    mazeParty: {
-      id: number; // 组队ID
-      owner: string; // 创建者
-      members: string[]; // 成员列表
-      status: 'waiting' | 'inGame' | 'completed'; // 组队状态
-    };
-
-    mazeUserParty: {
-      id: string; // 用户ID
-      partyId: number; // 组队ID
-    };
+    mazeParty: mazeParty;
+    mazeUserParty: mazeUserParty;
   }
 }
 
+export type mazeParty = {
+  id: number; // 组队ID
+  owner: string; // 创建者
+  members: string[]; // 成员列表
+  status: 'waiting' | 'inGame' | 'completed'; // 组队状态
+};
+
+export type mazeUserParty = {
+  id: string; // 用户ID
+  partyId: number; // 组队ID
+};
 
 class Maze
 {
@@ -181,10 +183,17 @@ class Maze
       }
 
       let playerIdList = [];
+      let party: mazeParty;
       if (single)
       {
         // 处理单人模式逻辑
         playerIdList = [uid];
+        party = {
+          id: Date.now(), // 简单的ID生成方式，可以替换为更复杂的逻辑
+          owner: uid,
+          members: playerIdList,
+          status: 'waiting',
+        };
       } else
       {
         const partyId = dataList[0].partyId;
@@ -195,7 +204,7 @@ class Maze
           return [h.at(v.session.username), '组队不存在，请检查后重新输入'];
         }
 
-        const party = partyList[0];
+        party = partyList[0];
         if (party.status !== 'waiting')
         {
           return [h.at(v.session.username), '组队状态不正确，无法开始迷宫'];
@@ -205,20 +214,20 @@ class Maze
         playerIdList = party.members;
       }
 
-      const userDataList = this.getUserDataList(playerIdList);
+      const userDataList = this.getUserDataList(playerIdList, v.session, party);
 
-      this.createMonster(userDataList);
+      this.createMonster(userDataList, v.session);
     });
   }
 
   // 获取用户数据列表
-  getUserDataList(playerIdList: string[])
+  getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
   {
     let userDataList: User[] = [];
 
     for (const playerId of playerIdList)
     {
-      const user = new User(playerId, this.ctx);
+      const user = new User(playerId, this.ctx, session, party);
       userDataList.push(user);
     }
 
@@ -226,13 +235,14 @@ class Maze
   }
 
   // 创建怪物与每个怪物的战斗序列
-  createMonster(userDataList: User[])
+  createMonster(userDataList: User[], session: Session)
   {
     // 这里可以添加创建怪物的逻辑
     // 每个怪物可以有不同的属性和技能
     // 返回一个包含所有怪物的列表
     let monsterList = [];
-    for (const user of userDataList) {
+    for (const user of userDataList)
+    {
       const monster = new Monster(user, this.ctx, userDataList);
       monsterList.push(monster);
     }

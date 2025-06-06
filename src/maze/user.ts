@@ -1,5 +1,6 @@
-import { Context } from "koishi";
+import { Context, Session } from "koishi";
 import { host } from "..";
+import { mazeParty } from ".";
 
 export class User
 {
@@ -23,14 +24,18 @@ export class User
   shieldBreak: number; // 护盾破坏力
   exp: number;// 用户经验值
   money: number; // 用户金币
+  session: Session; // 用户会话
+  party: mazeParty;// 用户所在的队伍
 
 
-  constructor(playerId: string, ctx: Context)
+  constructor(playerId: string, ctx: Context, session: Session, party: mazeParty)
   {
     this.playerId = playerId; // 用户ID
     this.partyId = null; // 组队ID
     this.status = 'waiting'; // 用户状态: 'waiting', 'inParty', 'inGame'
     this.ctx = ctx;
+    this.session = session; // 用户会话
+    this.party = party;
     this.initialize();
   }
 
