@@ -233,7 +233,7 @@ class Maze
     // 返回一个包含所有怪物的列表
     let monsterList = [];
     for (const user of userDataList) {
-      const monster = new Monster(user, this.ctx);
+      const monster = new Monster(user, this.ctx, userDataList);
       monsterList.push(monster);
     }
   }

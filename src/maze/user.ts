@@ -5,7 +5,7 @@ export class User
 {
   playerId: string; // 用户ID
   partyId: string | null; // 组队ID
-  status: 'waiting' | 'inParty' | 'inGame'; // 用户状态: 'idle', 'inParty', 'inGame'
+  status: 'waiting' | 'inParty' | 'inGame-alive' | 'inGame-die';
   ctx: Context; // Koishi 上下文
   id: string;
   hp: number; // 用户生命值
@@ -39,7 +39,7 @@ export class User
     let userData: User;
     try
     {
-      userData = await this.ctx.http.post(`${host}/getUser`, { id: this.playerId });
+      userData = await this.ctx.http.post(`${host}/user/get/info`, { id: this.playerId });
     } catch (err)
     {
       throw '无法获取用户信息' + err;
