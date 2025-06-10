@@ -1,6 +1,7 @@
 import { Context, h, Schema, Session } from 'koishi';
 import { User } from './user';
 import { Monster } from './monster';
+import { MazeGame } from './mazeGame';
 
 namespace Maze
 {
@@ -216,7 +217,7 @@ class Maze
 
       const userDataList = this.getUserDataList(playerIdList, v.session, party);
 
-      this.createMonster(userDataList, v.session);
+      this.startMaze(userDataList, v.session);
     });
   }
 
@@ -235,19 +236,21 @@ class Maze
   }
 
   // 创建怪物与每个怪物的战斗序列
-  createMonster(userDataList: User[], session: Session)
+  startMaze(userDataList: User[], session: Session)
   {
     // 这里可以添加创建怪物的逻辑
     // 每个怪物可以有不同的属性和技能
     // 返回一个包含所有怪物的列表
-    let monsterList = [];
-    for (const user of userDataList)
-    {
-      const monster = new Monster(user, this.ctx, userDataList);
-      monsterList.push(monster);
-    }
+    const mazeGame = new MazeGame(this.ctx, session, userDataList);
+    mazeGame.start();
+
   }
 
 }
 
 export default Maze;
+
+// 欸
+// 要不要整个局内金币
+// 在开局的时候可以使用金币购买一个方向的金币
+// 升级的属性点可以点在开局金币上

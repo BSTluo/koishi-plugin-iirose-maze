@@ -67,4 +67,33 @@ export class User
     this.exp = userData.exp; // 用户经验值
     this.money = userData.money; // 用户金币
   }
+
+  // 物理攻击
+  async physicalAttackSkill()
+  {
+
+  }
+
+  // 魔法攻击
+  async magicAttackSkill()
+  {
+
+  }
+
+  // 格挡
+  public blockSkill()
+  {
+
+  }
+
+  // 弹反
+  async parrySkill()
+  {
+
+  }
+
+  // 治疗技能
+  async healingSkill() {
+
+  }
 }

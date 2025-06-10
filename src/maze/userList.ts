@@ -6,7 +6,7 @@ export class UserList
   userList: User[]; // 用户列表
   ctx: Context; // Koishi 上下文
 
-  constructor(userList: User[], ctx: Context)
+  constructor(ctx: Context, userList: User[])
   {
     this.userList = userList;
     this.ctx = ctx;

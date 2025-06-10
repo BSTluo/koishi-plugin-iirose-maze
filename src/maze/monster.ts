@@ -30,7 +30,7 @@ export class Monster
     const level = Math.floor(user.level / 5);
     this.level = level * 5;
     this.userList = userList; // 用户列表
-    const userListClass = new UserList(this.userList, this.ctx);
+    const userListClass = new UserList(this.ctx, this.userList);
     this.userListClass = userListClass;
     this.initialize();
   }
@@ -156,7 +156,7 @@ export class Monster
   // 魔法攻击
   private async magicAttackSkill()
   {
-    const userListClass = new UserList(this.userList, this.ctx);
+    const userListClass = new UserList(this.ctx, this.userList);
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
 
     if (!minHpUser) return;
