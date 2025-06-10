@@ -62,8 +62,6 @@ class Maze
 
   start()
   {
-    this.ctx.command('maze', '花园迷宫');
-
     this.ctx.command('maze.cp').alias('创建迷宫组队').action(async v =>
     {
       const uid = v.session.userId;
@@ -91,9 +89,16 @@ class Maze
 
     this.ctx.command('maze.jp <partyid:number>').alias('加入迷宫组队').action(async (v, partyid) =>
     {
+      const uid = v.session.userId;
       if (!partyid)
       {
         return [h.at(v.session.username), '未输入迷宫组队ID'];
+      }
+
+      const userInfoData = await this.ctx.database.get('mazeUserParty', { id: uid });
+      if (userInfoData.length > 0)
+      {
+        return [h.at(v.session.username), '你已经在一个组队中了，请先退出当前组队'];
       }
 
       const dataList = await this.ctx.database.get('mazeParty', { id: partyid });
@@ -101,8 +106,6 @@ class Maze
       {
         return [h.at(v.session.username), '迷宫组队ID不存在，请检查后重新输入'];
       }
-
-      const uid = v.session.userId;
 
       const party = dataList[0];
 

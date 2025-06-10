@@ -6,7 +6,7 @@ export class User
 {
   playerId: string; // 用户ID
   partyId: string | null; // 组队ID
-  status: 'waiting' | 'inParty' | 'inGame-alive' | 'inGame-die';
+  status: 'free' | 'waiting' | 'inParty' | 'inGame-alive' | 'inGame-die';
   ctx: Context; // Koishi 上下文
   id: string;
   hp: number; // 用户生命值
@@ -47,7 +47,15 @@ export class User
       userData = await this.ctx.http.post(`${host}/user/get/info`, { id: this.playerId });
     } catch (err)
     {
-      throw '无法获取用户信息' + err;
+      const errorMessage = err.response ? err.response.data : err.message;
+      if (errorMessage == 'User not found')
+      {
+        this.session.send('用户信息未找到，请先创建用户。\n\n使用指令maze help查看帮助信息。');
+        throw '用户信息未找到，请先创建用户。';
+      } else
+      {
+        throw '无法获取用户信息' + err;
+      }
     }
 
     this.id = userData.id; // 用户ID
@@ -93,7 +101,8 @@ export class User
   }
 
   // 治疗技能
-  async healingSkill() {
+  async healingSkill()
+  {
 
   }
 }

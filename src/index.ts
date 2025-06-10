@@ -3,6 +3,7 @@ import maze from './maze';
 import mine from './mine';
 import river from './river';
 import town from './town';
+import core from './core';
 
 export const name = 'iirose-maze';
 
@@ -40,4 +41,6 @@ export function apply(ctx: Context)
       }
     }
   });
+
+  ctx.plugin(core);
 }
