@@ -182,7 +182,7 @@ class Maze
           return [h.at(v.session.username), '你放弃进入迷宫'];
         } else
         {
-          return [h.at(v.session.username), '输入无效，请重新输入'];
+          return [h.at(v.session.username), '输入无效，请重新执行命令'];
         }
       }
 
@@ -211,42 +211,53 @@ class Maze
         party = partyList[0];
         if (party.status !== 'waiting')
         {
-          return [h.at(v.session.username), '组队状态不正确，无法开始迷宫'];
+          return [h.at(v.session.username), `组队状态为【${party.status}】，无法开始迷宫`];
         }
         await this.ctx.database.set('mazeParty', { id: partyId }, { status: 'inGame' });
 
         playerIdList = party.members;
       }
+      await this.startMaze(v.session, playerIdList, party);
+    });
 
-      const userDataList = await this.getUserDataList(playerIdList, v.session, party);
+    this.ctx.command('maze.run').alias('结束迷宫').action(async v =>
+    {
+      const uid = v.session.userId;
+      const dataList = await this.ctx.database.get('mazeUserParty', { id: uid });
+      let single = false;
 
-      await this.startMaze(userDataList, v.session);
+      if (dataList.length <= 0)
+      {
+        return v.session.send([h.at(v.session.username), '你不在任何组队中']);
+      }
+
+      await this.ctx.database.remove('mazeUserParty', { id: uid });
+
+      const useData = dataList[0];
+      // 未完成，此处需要将整局游戏结束，包括投票结束之类的
+      this.mazeGameList[useData.partyId].party.members = this.mazeGameList[useData.partyId].party.members.filter(member => member !== uid);
+      
+      // 将此人从member中移除，都没人时删除
+      if (this.mazeGameList[useData.partyId].party.members.length === 0)
+      {
+        await this.ctx.database.remove('mazeParty', { id: useData.partyId });
+      }
+
+      this.mazeGameList[useData.partyId].stop()
     });
   }
 
-  // 获取用户数据列表
-  async getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
-  {
-    let userDataList: User[] = [];
-
-    for (const playerId of playerIdList)
-    {
-      const user = new User(playerId, this.ctx, session, party);
-      userDataList.push(await user.initialize());
-    }
-
-    return userDataList;
-  }
+  mazeGameList: Record<string, MazeGame> = {};
 
   // 创建怪物与每个怪物的战斗序列
-  async startMaze(userDataList: User[], session: Session)
+  async startMaze(session: Session, playerIdList: string[], party: mazeParty)
   {
     // 这里可以添加创建怪物的逻辑
     // 每个怪物可以有不同的属性和技能
     // 返回一个包含所有怪物的列表
-    const mazeGame = await (new MazeGame(this.ctx, session, userDataList)).initialize();
+    const mazeGame = await (new MazeGame(this.ctx, session, playerIdList, party)).initialize();
     mazeGame.start();
-
+    this.mazeGameList[party.id] = mazeGame; // 将游戏实例存储在列表中
   }
 
 }
