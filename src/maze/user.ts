@@ -3,6 +3,7 @@ import { host } from "..";
 import { mazeParty } from ".";
 import { MonsterList } from "./monsterList";
 import { UserList } from "./userList";
+import { Monster } from "./monster";
 
 export class User
 {
@@ -81,13 +82,13 @@ export class User
   }
 
   // 物理攻击
-  async physicalAttackSkill(target: number)
+  async physicalAttackSkill(target: number, monster: Monster)
   {
 
   }
 
   // 魔法攻击
-  async magicAttackSkill(target: number)
+  async magicAttackSkill(target: number, monster: Monster)
   {
 
   }
@@ -105,13 +106,13 @@ export class User
   }
 
   // 治疗技能
-  async healingSkill(target: number)
+  async healingSkill(target: number, user: User)
   {
 
   }
 
   // 使用物品
-  async useItem(itemName: string)
+  async useItem(itemName: string, user: User)
   {
 
   }
@@ -120,14 +121,18 @@ export class User
   {
     this.userList = userList; // 设置用户列表
     this.monsterList = monsterList; // 设置怪物列表
-    
+
+    let who = target;
+
     switch (actionName)
     {
       case '物理攻击':
-        this.physicalAttackSkill(target);
+        if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
+        this.physicalAttackSkill(target, monsterList.monsterList[target]);
         break;
       case '魔法攻击':
-        this.magicAttackSkill(target);
+        if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
+        this.magicAttackSkill(target, monsterList.monsterList[target]);
         break;
       case '格挡':
         this.blockSkill(target);
@@ -136,14 +141,16 @@ export class User
         this.parrySkill(target);
         break;
       case '治愈':
-        this.healingSkill(target);
+        if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
+        this.healingSkill(target, this.userList.userObjList[target]);
         break;
       case '道具使用':
-        this.useItem('所用的物品');
+        if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
+        this.useItem('所用的物品', this.userList.userObjList[target]);
         break;
       default:
         this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
-        this.physicalAttackSkill(target);
+        this.physicalAttackSkill(target, monsterList.monsterList[0]);
     }
   }
 }
