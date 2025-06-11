@@ -1,6 +1,5 @@
 import { Context, h } from "koishi";
 import { User } from "./user";
-import { host } from "..";
 import { UserList } from "./userList";
 import { Monster } from "./monster";
 
@@ -17,15 +16,16 @@ export class MonsterList
     this.userList = userList; // 用户列表
     const userListClass = new UserList(this.ctx, this.userList);
     this.userListClass = userListClass; // 用户列表类
-    this.initialize();
   }
 
-  initialize()
+  async initialize()
   {
     for (const user of this.userList)
     {
       const monster = new Monster(user, this.ctx, this.userList);
-      this.monsterList.push(monster);
+      this.monsterList.push(await monster.initialize());
     }
+
+    return this;
   }
 }

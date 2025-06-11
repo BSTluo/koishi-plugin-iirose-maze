@@ -218,33 +218,33 @@ class Maze
         playerIdList = party.members;
       }
 
-      const userDataList = this.getUserDataList(playerIdList, v.session, party);
+      const userDataList = await this.getUserDataList(playerIdList, v.session, party);
 
-      this.startMaze(userDataList, v.session);
+      await this.startMaze(userDataList, v.session);
     });
   }
 
   // 获取用户数据列表
-  getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
+  async getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
   {
     let userDataList: User[] = [];
 
     for (const playerId of playerIdList)
     {
       const user = new User(playerId, this.ctx, session, party);
-      userDataList.push(user);
+      userDataList.push(await user.initialize());
     }
 
     return userDataList;
   }
 
   // 创建怪物与每个怪物的战斗序列
-  startMaze(userDataList: User[], session: Session)
+  async startMaze(userDataList: User[], session: Session)
   {
     // 这里可以添加创建怪物的逻辑
     // 每个怪物可以有不同的属性和技能
     // 返回一个包含所有怪物的列表
-    const mazeGame = new MazeGame(this.ctx, session, userDataList);
+    const mazeGame = await (new MazeGame(this.ctx, session, userDataList)).initialize();
     mazeGame.start();
 
   }

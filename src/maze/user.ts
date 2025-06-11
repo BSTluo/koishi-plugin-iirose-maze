@@ -36,10 +36,9 @@ export class User
     this.ctx = ctx;
     this.session = session; // 用户会话
     this.party = party;
-    this.initialize();
   }
 
-  private async initialize()
+  async initialize()
   {
     let userData: User;
     try
@@ -74,6 +73,8 @@ export class User
     this.shieldBreak = userData.shieldBreak; // 护盾破坏力
     this.exp = userData.exp; // 用户经验值
     this.money = userData.money; // 用户金币
+
+    return this;
   }
 
   // 物理攻击

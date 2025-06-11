@@ -27,15 +27,15 @@ export class Monster
   {
     this.ctx = ctx;
     // 怪物以每5级作为一个分水岭
+    // console.log(user)
     const level = Math.floor(user.level / 5);
     this.level = level * 5;
     this.userList = userList; // 用户列表
     const userListClass = new UserList(this.ctx, this.userList);
     this.userListClass = userListClass;
-    this.initialize();
   }
 
-  private async initialize()
+  async initialize()
   {
     let monsterData: Monster;
     try
@@ -43,7 +43,9 @@ export class Monster
       monsterData = await this.ctx.http.post(`${host}/monster/get/info`, { level: this.level });
     } catch (err)
     {
-      throw '无法获取用户信息' + err;
+      const errorMessage = err.response ? err.response.data : err.message;
+      console.log(err);
+      throw '无法获取怪物信息' + errorMessage;
     }
 
     this.name = monsterData.name; // 怪物名称
@@ -60,6 +62,7 @@ export class Monster
     this.shieldValue = monsterData.shieldValue; // 护盾值 
     this.shieldBreak = monsterData.shieldBreak; // 护盾破坏力
     this.hp = this.hp + Math.floor(Math.random() * this.level); // 怪物生命值随机增加
+    return this;
   }
 
   public async useSkill(user: User)
