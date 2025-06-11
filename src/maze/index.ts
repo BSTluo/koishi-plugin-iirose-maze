@@ -236,14 +236,14 @@ class Maze
       const useData = dataList[0];
       // 未完成，此处需要将整局游戏结束，包括投票结束之类的
       this.mazeGameList[useData.partyId].party.members = this.mazeGameList[useData.partyId].party.members.filter(member => member !== uid);
-      
+
       // 将此人从member中移除，都没人时删除
       if (this.mazeGameList[useData.partyId].party.members.length === 0)
       {
         await this.ctx.database.remove('mazeParty', { id: useData.partyId });
       }
 
-      this.mazeGameList[useData.partyId].stop()
+      this.mazeGameList[useData.partyId].stop();
     });
   }
 
@@ -256,8 +256,9 @@ class Maze
     // 每个怪物可以有不同的属性和技能
     // 返回一个包含所有怪物的列表
     const mazeGame = await (new MazeGame(this.ctx, session, playerIdList, party)).initialize();
-    mazeGame.start();
     this.mazeGameList[party.id] = mazeGame; // 将游戏实例存储在列表中
+    await mazeGame.start();
+
   }
 
 }

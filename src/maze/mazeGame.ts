@@ -1,4 +1,4 @@
-import { Context, Session } from "koishi";
+import { Context, h, Session } from "koishi";
 import { User } from "./user";
 import { MonsterList } from "./monsterList";
 import { UserList } from "./userList";
@@ -64,17 +64,53 @@ export class MazeGame
   }
 
   // 开始游戏
-  start()
+  async start()
   {
     this.session.send('游戏开始，请准备好！'); // 发送游戏开始消息
     this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
+    this.session.send([
+      '请注意，游戏开始后，需要在规定时间内输入指令进行攻击。有如下的指令：\n',
+      '物理攻击\n',
+      '魔法攻击\n',
+      '格挡\n',
+      '弹反\n',
+      '治愈\n',
+      '道具使用\n\n',
+      '需要注意：治愈与使用道具的目标是己方'
+    ]); // 提醒玩家输入指令
 
     for (const user of this.userList.userObjList)
     {
+      this.session.send([
+        h.at(this.session.username),
+        '请在5秒内输入指令以及攻击目标（如：攻击 1），超时将自动物理攻击第一位。'
+      ]);
 
+      const input = await this.session.prompt(5000);
 
+      let action = '物理攻击'; // 默认动作为物理攻击
+      let target = 0; // 默认目标为第一位
+
+      if (!input)
+      {
+        this.session.send([h.at(this.session.username), '输入超时，自动进行物理攻击第一位。']);
+      }
+
+      const inputMagTemp = input.match(/(物理攻击|魔法攻击|格挡|弹反|治愈|道具使用)\s+(\d+)?/);
+
+      if (!inputMagTemp)
+      {
+        this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+      } else {
+        action = inputMagTemp[1]; // 获取动作
+        target = parseInt(inputMagTemp[2]) - 1 || 0; // 获取目标，默认第一位
+      }
+
+      
     }
   }
+
+
 
   // 结束游戏
   stop()
