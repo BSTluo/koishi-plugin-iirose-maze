@@ -101,16 +101,15 @@ export class MazeGame
       if (!inputMagTemp)
       {
         this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
-      } else {
+      } else
+      {
         action = inputMagTemp[1]; // 获取动作
         target = parseInt(inputMagTemp[2]) - 1 || 0; // 获取目标，默认第一位
       }
 
-      
+      user.action(action, target, this.userList, this.monsterList); // 执行用户动作
     }
   }
-
-
 
   // 结束游戏
   stop()

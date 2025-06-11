@@ -1,6 +1,8 @@
-import { Context, Session } from "koishi";
+import { Context, h, Session } from "koishi";
 import { host } from "..";
 import { mazeParty } from ".";
+import { MonsterList } from "./monsterList";
+import { UserList } from "./userList";
 
 export class User
 {
@@ -26,7 +28,8 @@ export class User
   money: number; // 用户金币
   session: Session; // 用户会话
   party: mazeParty;// 用户所在的队伍
-
+  userList: UserList;
+  monsterList: MonsterList;
 
   constructor(playerId: string, ctx: Context, session: Session, party?: mazeParty)
   {
@@ -78,32 +81,69 @@ export class User
   }
 
   // 物理攻击
-  async physicalAttackSkill()
+  async physicalAttackSkill(target: number)
   {
 
   }
 
   // 魔法攻击
-  async magicAttackSkill()
+  async magicAttackSkill(target: number)
   {
 
   }
 
   // 格挡
-  public blockSkill()
+  public blockSkill(target: number)
   {
 
   }
 
   // 弹反
-  async parrySkill()
+  async parrySkill(target: number)
   {
 
   }
 
   // 治疗技能
-  async healingSkill()
+  async healingSkill(target: number)
   {
 
+  }
+
+  // 使用物品
+  async useItem(itemName: string)
+  {
+
+  }
+
+  async action(actionName: string, target: number, userList: UserList, monsterList: MonsterList)
+  {
+    this.userList = userList; // 设置用户列表
+    this.monsterList = monsterList; // 设置怪物列表
+    
+    switch (actionName)
+    {
+      case '物理攻击':
+        this.physicalAttackSkill(target);
+        break;
+      case '魔法攻击':
+        this.magicAttackSkill(target);
+        break;
+      case '格挡':
+        this.blockSkill(target);
+        break;
+      case '弹反':
+        this.parrySkill(target);
+        break;
+      case '治愈':
+        this.healingSkill(target);
+        break;
+      case '道具使用':
+        this.useItem('所用的物品');
+        break;
+      default:
+        this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+        this.physicalAttackSkill(target);
+    }
   }
 }
