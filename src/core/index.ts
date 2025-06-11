@@ -48,6 +48,34 @@ class Core
       v.session.send([h.at(v.session.username), '你已成功注册！']);
 
     });
+
+    this.ctx.command('maze.me').alias('迷宫号信息').action(async v =>
+    {
+      const uid = v.session.userId;
+
+      const user = await (new User(uid, this.ctx, v.session, null)).initialize();
+      
+
+      return [
+        h.at(v.session.username),
+        `\n\n你的迷宫号信息如下：\n\n`,
+        `生命值: ${user.hp}\n`,
+        `魔法值: ${user.mp}\n`,
+        `等级: ${user.level}\n`,
+        `物理攻击力: ${user.physicalAttack}\n`,
+        `物理暴击率: ${user.physicalCrit}\n`,
+        `魔法攻击力: ${user.magicAttack}\n`,
+        `魔法暴击率: ${user.magicCrit}\n`,
+        `物理防御力: ${user.physicalDefense}\n`,
+        `魔法防御力: ${user.magicDefense}\n`,
+        `速度: ${user.speed}\n`,
+        `治疗量: ${user.healingPower}\n`,
+        `护盾值: ${user.shieldValue}\n`,
+        `护盾破坏力: ${user.shieldBreak}\n`,
+        `经验值: ${user.exp}\n`,
+        `金币: ${user.money}\n`
+      ]
+    });
   }
 
 }

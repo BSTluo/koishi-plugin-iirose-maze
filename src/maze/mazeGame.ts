@@ -6,13 +6,12 @@ import { mazeParty } from ".";
 
 export class MazeGame
 {
-  userList: User[]; // 用户列表
-  monsterListObj: MonsterList; // 怪物列表
-  userListObj: UserList;
   ctx: Context; // Koishi 上下文
   session: Session; // 会话对象
   playerIdList: string[];
   party: mazeParty;
+  userList: UserList; // 用户列表对象
+  monsterList: MonsterList; // 怪物列表对象
 
   constructor(ctx: Context, session: Session, playerIdList: string[], party: mazeParty)
   {
@@ -26,11 +25,9 @@ export class MazeGame
   {
     this.party.status = 'inGame'; // 更新组队状态为进行中
     await this.ctx.database.upsert('mazeParty', [this.party]); // 更新数据库中的组队状态
-    const userDataList = await this.getUserDataList(this.playerIdList, this.session, this.party);
+    this.userList = await (new UserList(this.ctx, this.session, this.playerIdList, this.party)).initialize(); // 初始化用户列表对象
 
-    this.userList = userDataList; // 初始化用户列表
-    this.monsterListObj = await (new MonsterList(this.ctx, this.userList)).initialize(); // 初始化怪物列表
-    this.userListObj = new UserList(this.ctx, this.userList); // 初始化用户列表对象
+    this.monsterList = await (new MonsterList(this.ctx, this.userList)).initialize(); // 初始化怪物列表
     return this; // 返回当前实例
   }
 
@@ -56,9 +53,9 @@ export class MazeGame
   {
     let openingMessage = '';
 
-    for (let i = 0; i < this.monsterListObj.monsterList.length; i++)
+    for (let i = 0; i < this.monsterList.monsterList.length; i++)
     {
-      const monster = this.monsterListObj.monsterList[i]; // 获取怪物信息
+      const monster = this.monsterList.monsterList[i]; // 获取怪物信息
       openingMessage += `${i + 1}. ${monster.name} HP：${monster.hp}\n`;
       i++;
     }
@@ -72,6 +69,11 @@ export class MazeGame
     this.session.send('游戏开始，请准备好！'); // 发送游戏开始消息
     this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
 
+    for (const user of this.userList.userObjList)
+    {
+
+
+    }
   }
 
   // 结束游戏

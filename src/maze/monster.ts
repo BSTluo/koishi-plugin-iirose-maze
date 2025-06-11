@@ -20,10 +20,9 @@ export class Monster
   healingPower: number; // 治疗量
   shieldValue: number; // 护盾值
   shieldBreak: number; // 护盾破坏力
-  userList: User[];
-  userListClass: UserList;
+  userList: UserList;
 
-  constructor(user: User, ctx: Context, userList: User[])
+  constructor(user: User, ctx: Context, userList: UserList)
   {
     this.ctx = ctx;
     // 怪物以每5级作为一个分水岭
@@ -31,8 +30,6 @@ export class Monster
     const level = Math.floor(user.level / 5);
     this.level = level * 5;
     this.userList = userList; // 用户列表
-    const userListClass = new UserList(this.ctx, this.userList);
-    this.userListClass = userListClass;
   }
 
   async initialize()
@@ -106,8 +103,8 @@ export class Monster
   // 物理攻击
   private async physicalAttackSkill()
   {
-    const userListClass = this.userListClass;
-    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
+    const userListClass = this.userList;
+    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList.userObjList[Math.floor(Math.random() * this.userList.userObjList.length)];
 
     if (!minHpUser) return;
 
@@ -159,8 +156,8 @@ export class Monster
   // 魔法攻击
   private async magicAttackSkill()
   {
-    const userListClass = new UserList(this.ctx, this.userList);
-    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList[Math.floor(Math.random() * this.userList.length)];
+    const userListClass = this.userList
+    const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList.userObjList[Math.floor(Math.random() * this.userList.userObjList.length)];
 
     if (!minHpUser) return;
 
@@ -221,7 +218,7 @@ export class Monster
   // 弹反
   public async parrySkill(user: User)
   {
-    const userListClass = this.userListClass;
+    const userListClass = this.userList;
     // 速度越高，弹反伤害越高
     user.hp -= this.speed * 0.3;
 

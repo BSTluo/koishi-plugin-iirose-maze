@@ -28,7 +28,7 @@ export class User
   party: mazeParty;// 用户所在的队伍
 
 
-  constructor(playerId: string, ctx: Context, session: Session, party: mazeParty)
+  constructor(playerId: string, ctx: Context, session: Session, party?: mazeParty)
   {
     this.playerId = playerId; // 用户ID
     this.partyId = null; // 组队ID
