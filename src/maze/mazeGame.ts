@@ -25,9 +25,9 @@ export class MazeGame
   {
     this.party.status = 'inGame'; // 更新组队状态为进行中
     await this.ctx.database.upsert('mazeParty', [this.party]); // 更新数据库中的组队状态
-    this.userList = await (new UserList(this.ctx, this.session, this.playerIdList, this.party)).initialize(); // 初始化用户列表对象
+    this.userList = await (new UserList(this.ctx, this.session, this)).initialize(); // 初始化用户列表对象
 
-    this.monsterList = await (new MonsterList(this.ctx, this.userList)).initialize(); // 初始化怪物列表
+    this.monsterList = await (new MonsterList(this.ctx, this)).initialize(); // 初始化怪物列表
     return this; // 返回当前实例
   }
 
@@ -37,7 +37,7 @@ export class MazeGame
 
     for (const playerId of playerIdList)
     {
-      const user = new User(playerId, this.ctx, session, party);
+      const user = new User(playerId, this.ctx, session, this);
       userDataList.push(await user.initialize());
       const data = {
         id: user.id,
@@ -74,9 +74,10 @@ export class MazeGame
       '魔法攻击\n',
       '格挡\n',
       '弹反\n',
-      '治愈\n',
-      '道具使用\n\n',
-      '需要注意：治愈与使用道具的目标是己方'
+      '治愈\n\n',
+      // '道具使用\n\n',(下次做)
+      // '需要注意：治愈与使用道具的目标是己方'(下次做)
+      '需要注意：治愈与的目标是己方'
     ]); // 提醒玩家输入指令
 
     for (const user of this.userList.userObjList)

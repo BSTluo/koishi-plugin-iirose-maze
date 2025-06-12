@@ -2,6 +2,7 @@ import { Context, h } from "koishi";
 import { User } from "./user";
 import { host } from "..";
 import { UserList } from "./userList";
+import { MazeGame } from "./mazeGame";
 
 export class Monster
 {
@@ -21,8 +22,9 @@ export class Monster
   shieldValue: number; // 护盾值
   shieldBreak: number; // 护盾破坏力
   userList: UserList;
+  mazeGame: MazeGame;
 
-  constructor(user: User, ctx: Context, userList: UserList)
+  constructor(user: User, ctx: Context, userList: UserList, mazeGame: MazeGame)
   {
     this.ctx = ctx;
     // 怪物以每5级作为一个分水岭
@@ -30,6 +32,7 @@ export class Monster
     const level = Math.floor(user.level / 5);
     this.level = level * 5;
     this.userList = userList; // 用户列表
+    this.mazeGame = mazeGame; // 迷宫游戏实例
   }
 
   async initialize()
@@ -149,7 +152,7 @@ export class Monster
     if (userListClass.isDie())
     {
       minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-      await userListClass.killParty();
+      await this.mazeGame.stop();
     }
   }
 
@@ -202,7 +205,7 @@ export class Monster
     if (userListClass.isDie())
     {
       minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-      await userListClass.killParty();
+      await this.mazeGame.stop();
     }
   }
 
@@ -238,7 +241,7 @@ export class Monster
     if (userListClass.isDie())
     {
       user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
-      await userListClass.killParty();
+      await this.mazeGame.stop();
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Context, Session } from "koishi";
 import { User } from "./user";
 import { mazeParty } from ".";
+import { MazeGame } from "./mazeGame";
 
 export class UserList
 {
@@ -9,12 +10,14 @@ export class UserList
   userIdList: string[]; // 玩家ID列表
   party: mazeParty;
   session: Session;
+  mazeGame: MazeGame;
 
-  constructor(ctx: Context, session: Session, userList: string[], party?: mazeParty)
+  constructor(ctx: Context, session: Session, mazeGame: MazeGame)
   {
-    this.userIdList = userList;
+    this.mazeGame = mazeGame; // 迷宫游戏实例
+    this.userIdList = mazeGame.playerIdList;
     this.ctx = ctx;
-    this.party = party; // 组队信息
+    this.party = this.mazeGame.party; // 组队信息
     this.session = session; // 用户会话
   }
 
@@ -24,7 +27,7 @@ export class UserList
 
     for (const playerId of this.userIdList)
     {
-      const user = new User(playerId, this.ctx, this.session, this.party);
+      const user = new User(playerId, this.ctx, this.session, this.mazeGame);
       userDataList.push(await user.initialize());
       const data = {
         id: user.id,

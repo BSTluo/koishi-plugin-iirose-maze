@@ -4,6 +4,7 @@ import { mazeParty } from ".";
 import { MonsterList } from "./monsterList";
 import { UserList } from "./userList";
 import { Monster } from "./monster";
+import { MazeGame } from "./mazeGame";
 
 export class User
 {
@@ -13,6 +14,7 @@ export class User
   ctx: Context; // Koishi 上下文
   id: string;
   hp: number; // 用户生命值
+  baseHp: number; // 用户基础生命值
   mp: number; // 用户魔法值
   level: number; // 用户等级
   physicalAttack: number; // 物理攻击力
@@ -31,15 +33,17 @@ export class User
   party: mazeParty;// 用户所在的队伍
   userList: UserList;
   monsterList: MonsterList;
+  mazeGame: MazeGame;
 
-  constructor(playerId: string, ctx: Context, session: Session, party?: mazeParty)
+  constructor(playerId: string, ctx: Context, session: Session, mazeGame?: MazeGame)
   {
     this.playerId = playerId; // 用户ID
     this.partyId = null; // 组队ID
     this.status = 'waiting'; // 用户状态: 'waiting', 'inParty', 'inGame'
     this.ctx = ctx;
     this.session = session; // 用户会话
-    this.party = party;
+    this.mazeGame = mazeGame; // 迷宫游戏实例
+    this.party = this.mazeGame.party;
   }
 
   async initialize()
@@ -63,6 +67,7 @@ export class User
 
     this.id = userData.id; // 用户ID
     this.hp = userData.hp; // 用户生命值
+    this.baseHp = userData.hp;
     this.mp = userData.mp; // 用户魔法值
     this.level = userData.level; // 用户等级
     this.physicalAttack = userData.physicalAttack; // 物理攻击力
@@ -82,37 +87,132 @@ export class User
   }
 
   // 物理攻击
-  async physicalAttackSkill(target: number, monster: Monster)
+  async physicalAttackSkill(monster: Monster)
   {
+    // 计算自己的物理攻击伤害(基础攻击力+暴击伤害)
+    const monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
+    // 计算自己的破盾能力(基础攻击力*护盾破坏值)
+    const monsterShieldBreak = this.physicalAttack * this.shieldBreak;
 
+    // 计算怪物物理防御
+    const userDefense = monster.physicalDefense;
+    // 计算怪物护盾值
+    const userShieldValue = monster.shieldValue;
+
+    // 计算怪物实际护盾值
+    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+
+    if (userActualShieldValue <= 0)
+    {
+      monster.shieldValue = 0;
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾，护盾清空。`]);
+    } else
+    {
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余护盾值：${monster.shieldValue}。`]);
+    }
+
+    // 计算怪物实际伤害
+    monster.hp = monster.hp + userDefense - monsterDamage;
+
+    if (monster.hp <= 0)
+    {
+      monster.hp = 0;
+      // 怪物死亡逻辑
+      // 更新怪物状态
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，死亡。`]);
+    } else
+    {
+      // 更新怪物数据
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余生命值：${monster.hp}`]);
+    }
+
+    if (this.monsterList.isDie())
+    {
+      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
+      await this.mazeGame.stop();
+    }
   }
 
   // 魔法攻击
-  async magicAttackSkill(target: number, monster: Monster)
+  async magicAttackSkill(monster: Monster)
   {
+    // 计算自己的魔法攻击伤害(基础攻击力+暴击伤害)
+    const monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    // 计算自己的破盾能力(基础攻击力*护盾破坏值)
+    const monsterShieldBreak = this.magicAttack * this.shieldBreak;
 
+    // 计算怪物魔法防御
+    const userDefense = monster.magicDefense;
+    // 计算怪物护盾值
+    const userShieldValue = monster.shieldValue;
+
+    // 计算怪物实际护盾值
+    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+
+    if (userActualShieldValue <= 0)
+    {
+      monster.shieldValue = 0;
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾，护盾清空。`]);
+    } else
+    {
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余护盾值：${monster.shieldValue}。`]);
+    }
+
+    // 计算怪物实际伤害
+    monster.hp = monster.hp + userDefense - monsterDamage;
+
+    if (monster.hp <= 0)
+    {
+      monster.hp = 0;
+      // 怪物死亡逻辑
+      // 更新怪物状态
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，死亡。`]);
+    } else
+    {
+      // 更新怪物数据
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余生命值：${monster.hp}`]);
+    }
+
+    if (this.monsterList.isDie())
+    {
+      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
+      await this.mazeGame.stop();
+    }
   }
 
   // 格挡
-  public blockSkill(target: number)
+  public blockSkill()
   {
 
   }
 
   // 弹反
-  async parrySkill(target: number)
+  async parrySkill()
   {
 
   }
 
   // 治疗技能
-  async healingSkill(target: number, user: User)
+  async healingSkill(user: User)
   {
+    // 计算治疗量
+    const healingAmount = this.healingPower;
 
+    // 增加用户生命值
+    user.hp += healingAmount;
+
+    // 确保用户生命值不超过最大值
+    if (user.hp > user.baseHp)
+    {
+      user.hp = user.baseHp; // 恢复到最大生命值
+    }
+
+    // 更新用户状态
+    user.session.send([h.at(user.id), `被 ${this.id} 使用治愈技能，恢复了 ${healingAmount} 点生命值，当前生命值：${user.hp}`]);
   }
 
-  // 使用物品
-  async useItem(itemName: string, user: User)
+  // 使用物品(下次做)
+  async useItem(user: User)
   {
 
   }
@@ -128,29 +228,29 @@ export class User
     {
       case '物理攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        this.physicalAttackSkill(target, monsterList.monsterList[target]);
+        this.physicalAttackSkill(monsterList.monsterList[target]);
         break;
       case '魔法攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        this.magicAttackSkill(target, monsterList.monsterList[target]);
+        this.magicAttackSkill(monsterList.monsterList[target]);
         break;
       case '格挡':
-        this.blockSkill(target);
+        this.blockSkill();
         break;
       case '弹反':
-        this.parrySkill(target);
+        this.parrySkill();
         break;
       case '治愈':
         if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
-        this.healingSkill(target, this.userList.userObjList[target]);
+        this.healingSkill(this.userList.userObjList[target]);
         break;
-      case '道具使用':
-        if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
-        this.useItem('所用的物品', this.userList.userObjList[target]);
-        break;
+      // case '道具使用':
+      //   if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
+      //   this.useItem(this.userList.userObjList[target]);
+      //   break;
       default:
         this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
-        this.physicalAttackSkill(target, monsterList.monsterList[0]);
+        this.physicalAttackSkill(monsterList.monsterList[0]);
     }
   }
 }
