@@ -66,12 +66,4 @@ export class UserList
     }
     return true; // 所有用户的生命值都小于等于0，认为所有人都死亡
   }
-
-  async killParty()
-  {
-    const user = this.userObjList[0];
-    await this.ctx.database.remove('mazeParty', { id: user.party.id });
-    user.party = null;
-    await this.ctx.database.remove('mazeUserParty', { id: user.playerId });
-  }
 }
