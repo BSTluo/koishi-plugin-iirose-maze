@@ -34,6 +34,7 @@ export class User
   userList: UserList;
   monsterList: MonsterList;
   mazeGame: MazeGame;
+  baseMp: number;
 
   constructor(playerId: string, ctx: Context, session: Session, mazeGame?: MazeGame)
   {
@@ -69,6 +70,7 @@ export class User
     this.hp = userData.hp; // 用户生命值
     this.baseHp = userData.hp;
     this.mp = userData.mp; // 用户魔法值
+    this.baseMp = userData.mp; // 用户基础魔法值
     this.level = userData.level; // 用户等级
     this.physicalAttack = userData.physicalAttack; // 物理攻击力
     this.physicalCrit = userData.physicalCrit; // 物理暴击率
@@ -131,32 +133,31 @@ export class User
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    if (monster.hp <= 0)
-    {
-      monster.hp = 0;
-      // 怪物死亡逻辑
-      // 更新怪物状态
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，死亡。`]);
-    } else
-    {
-      // 更新怪物数据
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余生命值：${monster.hp}`]);
-    }
-
-    if (this.monsterList.isDie())
-    {
-      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop('win');
-    }
+    this.isDie(monster);
   }
 
   // 魔法攻击
   async magicAttackSkill(monster: Monster)
   {
     // 计算自己的魔法攻击伤害(基础攻击力+暴击伤害)
-    const monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
-    const monsterShieldBreak = this.magicAttack * this.shieldBreak;
+    let monsterShieldBreak = this.magicAttack * this.shieldBreak;
+
+    if (monster.blockStatus)
+    {
+      monsterDamage *= 0.5; // 如果怪物处于格挡状态，伤害减半
+      monsterShieldBreak *= 0.5; // 护盾破坏力也减半
+    }
+
+    if (monster.parryStatus)
+    {
+      monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
+      monsterShieldBreak = 0; // 护盾破坏力也为0
+      this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
+      this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      return; // 直接返回，不进行后续计算
+    }
 
     // 计算怪物魔法防御
     const userDefense = monster.magicDefense;
@@ -179,29 +180,20 @@ export class User
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    if (monster.hp <= 0)
-    {
-      monster.hp = 0;
-      // 怪物死亡逻辑
-      // 更新怪物状态
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，死亡。`]);
-    } else
-    {
-      // 更新怪物数据
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余生命值：${monster.hp}`]);
-    }
-
-    if (this.monsterList.isDie())
-    {
-      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop('win');
-    }
+    this.isDie(monster);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
   // 格挡
   public blockSkill()
   {
+    this.mp -= 5;
+    if (this.mp < 0)
+    {
+      this.session.send([h.at(this.session.username), '魔法值不足，无法使用格挡技能。']);
+      return; // 如果魔法值不足，直接返回
+    }
+
     this.blockStatus = true; // 设置为格挡状态
     this.session.send([h.at(this.session.username), '使用了格挡技能。']);
   }
@@ -210,6 +202,13 @@ export class User
   // 弹反
   async parrySkill()
   {
+    this.mp -= 10; // 扣除魔法值
+    if (this.mp < 0)
+    {
+      this.session.send([h.at(this.session.username), '魔法值不足，无法使用弹反技能。']);
+      return; // 如果魔法值不足，直接返回
+    }
+
     this.parryStatus = true; // 设置为弹反状态
     this.session.send([h.at(this.session.username), '使用了弹反技能。']);
   }
@@ -239,11 +238,34 @@ export class User
 
   }
 
+  async isDie(monster: Monster)
+  {
+    if (monster.hp <= 0)
+    {
+      monster.hp = 0;
+      // 怪物死亡逻辑
+      // 更新怪物状态
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，死亡。`]);
+    } else
+    {
+      // 更新怪物数据
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余生命值：${monster.hp}`]);
+    }
+
+    if (this.monsterList.isDie())
+    {
+      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
+      await this.mazeGame.stop('win');
+    }
+  }
+
   async action(actionName: string, target: number, userList: UserList, monsterList: MonsterList)
   {
     this.blockStatus = false; // 重置格挡状态
     this.parryStatus = false; // 重置弹反状态
-
+    this.mp += 2;
+    if (this.mp > this.baseMp) { this.mp = this.baseMp; } // 确保魔法值不超过最大值
+    
     this.userList = userList; // 设置用户列表
     this.monsterList = monsterList; // 设置怪物列表
 
