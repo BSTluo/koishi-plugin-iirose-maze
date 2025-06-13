@@ -129,7 +129,7 @@ export class User
     if (this.monsterList.isDie())
     {
       this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop();
+      await this.mazeGame.stop('win');
     }
   }
 
@@ -176,7 +176,7 @@ export class User
     if (this.monsterList.isDie())
     {
       this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop();
+      await this.mazeGame.stop('win');
     }
   }
 

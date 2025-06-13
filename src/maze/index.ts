@@ -243,7 +243,7 @@ class Maze
         await this.ctx.database.remove('mazeParty', { id: useData.partyId });
       }
 
-      this.mazeGameList[useData.partyId].stop();
+      this.mazeGameList[useData.partyId].stop('lose');
     });
   }
 

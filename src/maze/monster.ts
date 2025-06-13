@@ -152,7 +152,7 @@ export class Monster
     if (userListClass.isDie())
     {
       minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop();
+      await this.mazeGame.stop('lose');
     }
   }
 
@@ -205,7 +205,7 @@ export class Monster
     if (userListClass.isDie())
     {
       minHpUser.session.send([h.at(minHpUser.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop();
+      await this.mazeGame.stop('lose');
     }
   }
 
@@ -241,7 +241,7 @@ export class Monster
     if (userListClass.isDie())
     {
       user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop();
+      await this.mazeGame.stop('lose');
     }
   }
 }

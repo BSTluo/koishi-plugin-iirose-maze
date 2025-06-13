@@ -113,7 +113,7 @@ export class MazeGame
   }
 
   // 结束游戏
-  stop()
+  stop(status: 'win' | 'lose' | 'error')
   {
 
   }
