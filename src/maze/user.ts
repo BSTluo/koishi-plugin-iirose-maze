@@ -90,9 +90,25 @@ export class User
   async physicalAttackSkill(monster: Monster)
   {
     // 计算自己的物理攻击伤害(基础攻击力+暴击伤害)
-    const monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
+    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
-    const monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+    let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+
+    if (monster.blockStatus)
+    {
+      monsterDamage *= 0.5; // 如果怪物处于格挡状态，伤害减半
+      monsterShieldBreak *= 0.5; // 护盾破坏力也减半
+    }
+
+    if (monster.parryStatus)
+    {
+      monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
+      monsterShieldBreak = 0; // 护盾破坏力也为0
+      this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
+      this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      return; // 直接返回，不进行后续计算
+    }
+
 
     // 计算怪物物理防御
     const userDefense = monster.physicalDefense;
@@ -113,6 +129,7 @@ export class User
 
     // 计算怪物实际伤害
     monster.hp = monster.hp + userDefense - monsterDamage;
+    if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
     if (monster.hp <= 0)
     {
@@ -160,6 +177,7 @@ export class User
 
     // 计算怪物实际伤害
     monster.hp = monster.hp + userDefense - monsterDamage;
+    if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
     if (monster.hp <= 0)
     {
@@ -180,16 +198,20 @@ export class User
     }
   }
 
+  blockStatus: boolean = false; // 是否处于格挡状态
   // 格挡
   public blockSkill()
   {
-
+    this.blockStatus = true; // 设置为格挡状态
+    this.session.send([h.at(this.session.username), '使用了格挡技能。']);
   }
 
+  parryStatus: boolean = false; // 是否处于弹反状态
   // 弹反
   async parrySkill()
   {
-
+    this.parryStatus = true; // 设置为弹反状态
+    this.session.send([h.at(this.session.username), '使用了弹反技能。']);
   }
 
   // 治疗技能
@@ -219,6 +241,9 @@ export class User
 
   async action(actionName: string, target: number, userList: UserList, monsterList: MonsterList)
   {
+    this.blockStatus = false; // 重置格挡状态
+    this.parryStatus = false; // 重置弹反状态
+
     this.userList = userList; // 设置用户列表
     this.monsterList = monsterList; // 设置怪物列表
 

@@ -65,13 +65,15 @@ export class Monster
     return this;
   }
 
-  public async useSkill(user: User)
+  public async useSkill()
   {
     // 随机使用一种技能
     // 1. 物理攻击
     // 2. 魔法攻击
     // 3. 格挡
     // 4. 弹反
+    this.blockStatus = false; // 重置格挡状态
+    this.parryStatus = false; // 重置弹反状态
 
     const skillIndex = Math.floor(Math.random() * 100);
 
@@ -93,7 +95,7 @@ export class Monster
       }
 
       case (skillIndex >= 97 && skillIndex <= 100): {
-        await this.parrySkill(user);
+        await this.parrySkill();
         return;
       }
 
@@ -135,6 +137,7 @@ export class Monster
 
     // 计算用户实际伤害
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
+    if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
     if (minHpUser.hp <= 0)
     {
@@ -159,7 +162,7 @@ export class Monster
   // 魔法攻击
   private async magicAttackSkill()
   {
-    const userListClass = this.userList
+    const userListClass = this.userList;
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList.userObjList[Math.floor(Math.random() * this.userList.userObjList.length)];
 
     if (!minHpUser) return;
@@ -188,6 +191,7 @@ export class Monster
 
     // 计算用户实际伤害
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
+    if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
     if (minHpUser.hp <= 0)
     {
@@ -209,39 +213,20 @@ export class Monster
     }
   }
 
+  blockStatus: boolean = false; // 是否处于格挡状态
+
   // 格挡
   public blockSkill()
   {
-    // 使用格挡后，血量减少0.05%，最低减少10点
-    const less = Math.floor(this.hp * 0.05);
-    this.hp -= less > 10 ? less : 10;
-
+    this.blockStatus = true;
+    this.mazeGame.session.send([this.name, '使用了格挡技能。']);
   }
 
+  parryStatus: boolean = false; // 是否处于弹反状态
   // 弹反
-  public async parrySkill(user: User)
+  public async parrySkill()
   {
-    const userListClass = this.userList;
-    // 速度越高，弹反伤害越高
-    user.hp -= this.speed * 0.3;
-
-    if (user.hp <= 0)
-    {
-      user.hp = 0;
-      // 用户死亡逻辑
-      user.status = 'inGame-die';
-      // 更新用户状态
-      user.session.send([h.at(user.session.username), `被 ${this.name} 使用弹反攻击，死亡。`]);
-    } else
-    {
-      // 更新用户数据
-      user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${user.hp}`]);
-    }
-
-    if (userListClass.isDie())
-    {
-      user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
-      await this.mazeGame.stop('lose');
-    }
+    this.parryStatus = true; // 设置弹反状态
+    this.mazeGame.session.send([this.name, '使用了弹反技能。']);
   }
 }
