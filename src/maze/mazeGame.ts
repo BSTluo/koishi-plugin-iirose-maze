@@ -123,6 +123,18 @@ export class MazeGame
   // 结束游戏
   stop(status: 'win' | 'lose' | 'error')
   {
+    if (status === 'win')
+    {
+      this.session.send([h.at(this.session.username), '恭喜你们，所有人都成功通关迷宫！']);
+      
+    } else if (status === 'lose')
+    {
+      this.session.send([h.at(this.session.username), '很遗憾，所有人都死亡，游戏结束。']);
+    } else
+    {
+      this.session.send([h.at(this.session.username), '游戏发生错误，无法继续进行。']);
+    }
+
 
   }
 }

@@ -66,4 +66,9 @@ export class UserList
     }
     return true; // 所有用户的生命值都小于等于0，认为所有人都死亡
   }
+
+  gameWin()
+  {
+    
+  }
 }
