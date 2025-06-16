@@ -20,9 +20,9 @@ export class MonsterList
 
   async initialize()
   {
-    for (const user of this.userListClass.userObjList)
-    {
-      const monster = new Monster(user, this.ctx, this.userListClass, this.mazeGame);
+    for (let i =0; i < this.userListClass.userObjList.length; i++) {
+      const user = this.userListClass.userObjList[i];
+      const monster = new Monster(user, this.ctx, this.userListClass, this.mazeGame, i);
       this.monsterList.push(await monster.initialize());
     }
 

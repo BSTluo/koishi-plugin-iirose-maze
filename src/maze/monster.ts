@@ -24,8 +24,9 @@ export class Monster
   shieldBreak: number; // 护盾破坏力
   userList: UserList;
   mazeGame: MazeGame;
+  monsterIndex: number;
 
-  constructor(user: User, ctx: Context, userList: UserList, mazeGame: MazeGame)
+  constructor(user: User, ctx: Context, userList: UserList, mazeGame: MazeGame, monsterIndex: number)
   {
     this.ctx = ctx;
     // 怪物以每5级作为一个分水岭
@@ -34,6 +35,7 @@ export class Monster
     this.level = level * 5;
     this.userList = userList; // 用户列表
     this.mazeGame = mazeGame; // 迷宫游戏实例
+    this.monsterIndex = monsterIndex;
   }
 
   async initialize()
@@ -213,6 +215,11 @@ export class Monster
     this.mazeGame.session.send([this.name, '使用了弹反技能。']);
   }
 
+  die()
+  {
+    this.mazeGame.monsterList.monsterList.splice(this.monsterIndex, 1); // 从怪物列表中移除自己
+  }
+
   async isDie(user: User)
   {
     if (user.hp <= 0)
@@ -222,6 +229,8 @@ export class Monster
       user.status = 'inGame-die';
       // 更新用户状态
       user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，死亡。`]);
+
+      user.die();
     } else
     {
       // 更新用户数据

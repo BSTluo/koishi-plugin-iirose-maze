@@ -238,6 +238,16 @@ export class User
 
   }
 
+  die()
+  {
+    const index = this.mazeGame.userList.userIdList.indexOf(this.playerId);
+    if (index > -1)
+    {
+      this.mazeGame.userList.userObjList.splice(index, 1); // 从用户对象列表中移除自己
+      this.mazeGame.userList.userIdList.splice(index, 1); // 从用户列表中移除自己
+    }
+  }
+
   async isDie(monster: Monster)
   {
     if (monster.hp <= 0)
@@ -246,6 +256,7 @@ export class User
       // 怪物死亡逻辑
       // 更新怪物状态
       this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，死亡。`]);
+      monster.die();
     } else
     {
       // 更新怪物数据
@@ -265,7 +276,7 @@ export class User
     this.parryStatus = false; // 重置弹反状态
     this.mp += 2;
     if (this.mp > this.baseMp) { this.mp = this.baseMp; } // 确保魔法值不超过最大值
-    
+
     this.userList = userList; // 设置用户列表
     this.monsterList = monsterList; // 设置怪物列表
 
