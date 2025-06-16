@@ -11,6 +11,8 @@ export class UserList
   party: mazeParty;
   session: Session;
   mazeGame: MazeGame;
+  joinUserObjList: User[]; // 加入的用户列表
+  joinUserIdList: string[]; // 加入的用户ID列表
 
   constructor(ctx: Context, session: Session, mazeGame: MazeGame)
   {
@@ -36,7 +38,8 @@ export class UserList
       await this.ctx.database.upsert('mazeUserParty', [data]); // 更新或插入用户数据到数据库
     }
     this.userObjList = userDataList; // 设置用户对象列表
-
+    this.joinUserObjList = this.userObjList;
+    this.joinUserIdList = this.userIdList; // 设置加入的用户ID列表
     return this;
   }
 
@@ -69,6 +72,6 @@ export class UserList
 
   gameWin()
   {
-    
+
   }
 }

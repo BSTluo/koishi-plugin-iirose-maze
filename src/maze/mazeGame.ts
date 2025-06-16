@@ -127,6 +127,11 @@ export class MazeGame
     {
       this.session.send([h.at(this.session.username), '恭喜你们，所有人都成功通关迷宫！']);
       
+      for(let i=0; i < this.userList.joinUserObjList.length; i++)
+      {
+        const user = this.userList.joinUserObjList[i];
+        
+      }
     } else if (status === 'lose')
     {
       this.session.send([h.at(this.session.username), '很遗憾，所有人都死亡，游戏结束。']);

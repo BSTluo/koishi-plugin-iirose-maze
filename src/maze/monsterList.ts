@@ -10,6 +10,7 @@ export class MonsterList
   monsterList: Monster[] = []; // 怪物列表
   userListClass: UserList; // 用户列表类
   mazeGame: MazeGame;
+  createMonster: Monster[]; // 创建的怪物实例
 
   constructor(ctx: Context, mazeGame: MazeGame)
   {
@@ -20,12 +21,14 @@ export class MonsterList
 
   async initialize()
   {
-    for (let i =0; i < this.userListClass.userObjList.length; i++) {
+    for (let i = 0; i < this.userListClass.userObjList.length; i++)
+    {
       const user = this.userListClass.userObjList[i];
       const monster = new Monster(user, this.ctx, this.userListClass, this.mazeGame, i);
       this.monsterList.push(await monster.initialize());
     }
 
+    this.createMonster = this.monsterList;
     return this;
   }
 
@@ -39,5 +42,22 @@ export class MonsterList
       }
     }
     return true; // 所有用户的生命值都小于等于0，认为所有人都死亡
+  }
+
+  getExp()
+  {
+    let totalExp = 0;
+    const length = this.createMonster.length;
+    for (const monster of this.createMonster)
+    {
+      totalExp += monster.exp;
+    }
+
+    return totalExp / length; // 返回总经验值
+  }
+
+  getMoney()
+  {
+
   }
 }

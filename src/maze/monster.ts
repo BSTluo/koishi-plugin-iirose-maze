@@ -25,6 +25,8 @@ export class Monster
   userList: UserList;
   mazeGame: MazeGame;
   monsterIndex: number;
+  exp: number; // 怪物经验值
+  money: number; // 怪物掉落金币
 
   constructor(user: User, ctx: Context, userList: UserList, mazeGame: MazeGame, monsterIndex: number)
   {
