@@ -29,7 +29,6 @@ export const host = 'http://127.0.0.1:17515';
 
 export function apply(ctx: Context)
 {
-
   ctx.bots.forEach((bot) =>
   {
     const botId = bot.user.id;
@@ -37,6 +36,7 @@ export function apply(ctx: Context)
     {
       if (botConfig[key].includes(botId))
       {
+        ctx.logger.info(`Loading plugin: ${key} for bot: ${botId}`);
         ctx.plugin(pluginList[key]);
       }
     }

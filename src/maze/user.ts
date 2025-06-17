@@ -45,7 +45,7 @@ export class User
     this.ctx = ctx;
     this.session = session; // 用户会话
     this.mazeGame = mazeGame; // 迷宫游戏实例
-    this.party = this.mazeGame.party;
+    this.party = this.mazeGame?.party;
   }
 
   async initialize()

@@ -12,7 +12,7 @@ export class MazeGame
   party: mazeParty;
   userList: UserList; // 用户列表对象
   monsterList: MonsterList; // 怪物列表对象
-  
+
   constructor(ctx: Context, session: Session, playerIdList: string[], party: mazeParty)
   {
     this.ctx = ctx; // 设置上下文
@@ -31,23 +31,23 @@ export class MazeGame
     return this; // 返回当前实例
   }
 
-  private async getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
-  {
-    let userDataList: User[] = [];
+  // private async getUserDataList(playerIdList: string[], session: Session, party?: mazeParty)
+  // {
+  //   let userDataList: User[] = [];
 
-    for (const playerId of playerIdList)
-    {
-      const user = new User(playerId, this.ctx, session, this);
-      userDataList.push(await user.initialize());
-      const data = {
-        id: user.id,
-        partyId: party.id
-      };
-      await this.ctx.database.upsert('mazeUserParty', [data]); // 更新或插入用户数据到数据库
-    }
+  //   for (const playerId of playerIdList)
+  //   {
+  //     const user = new User(playerId, this.ctx, session, this);
+  //     userDataList.push(await user.initialize());
+  //     const data = {
+  //       id: user.id,
+  //       partyId: party.id
+  //     };
+  //     await this.ctx.database.upsert('mazeUserParty', [data]); // 更新或插入用户数据到数据库
+  //   }
 
-    return userDataList;
-  }
+  //   return userDataList;
+  // }
 
   getMonsterInfo()
   {
@@ -82,14 +82,16 @@ export class MazeGame
 
     while (this.party.status === 'inGame')
     {
+      console.log(this.userList.userObjList);
+
       for (const user of this.userList.userObjList)
       {
         this.session.send([
           h.at(this.session.username),
-          '请在5秒内输入指令以及攻击目标（如：攻击 1），超时将自动物理攻击第一位。'
+          '请在10秒内输入指令以及攻击目标（如：物理攻击 1），超时将自动物理攻击第一位。'
         ]);
 
-        const input = await this.session.prompt(5000);
+        let input = await this.session.prompt(10000);
 
         let action = '物理攻击'; // 默认动作为物理攻击
         let target = 0; // 默认目标为第一位
@@ -97,6 +99,7 @@ export class MazeGame
         if (!input)
         {
           this.session.send([h.at(this.session.username), '输入超时，自动进行物理攻击第一位。']);
+          input = '物理攻击 1'; // 如果没有输入，默认物理攻击第一位
         }
 
         const inputMagTemp = input.match(/(物理攻击|魔法攻击|格挡|弹反|治愈|道具使用)\s+(\d+)?/);
@@ -112,6 +115,7 @@ export class MazeGame
 
         user.action(action, target, this.userList, this.monsterList); // 执行用户动作
       }
+      console.log(this.monsterList.monsterList);
 
       for (const monster of this.monsterList.monsterList)
       {

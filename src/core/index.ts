@@ -26,7 +26,7 @@ class Core
 
     this.ctx.command('maze', '花园迷宫');
 
-    this.ctx.command('maze.reg').alias('注册迷宫号').action(async v =>
+    this.ctx.command('maze.reg', '注册迷宫号').alias('注册迷宫号').action(async v =>
     {
       let userData: User;
       const uid = v.session.userId;
@@ -39,6 +39,7 @@ class Core
         if (errorMessage == 'User has registered.')
         {
           v.session.send([h.at(v.session.username), '你已注册，请勿重复注册。']);
+          return;
         } else
         {
           throw '无法注册用户信息' + err;
@@ -49,12 +50,12 @@ class Core
 
     });
 
-    this.ctx.command('maze.me').alias('迷宫号信息').action(async v =>
+    this.ctx.command('maze.me', '迷宫号信息').alias('迷宫号信息').action(async v =>
     {
       const uid = v.session.userId;
 
       const user = await (new User(uid, this.ctx, v.session, null)).initialize();
-      
+
 
       return [
         h.at(v.session.username),
@@ -74,7 +75,7 @@ class Core
         `护盾破坏力: ${user.shieldBreak}\n`,
         `经验值: ${user.exp}\n`,
         `金币: ${user.money}\n`
-      ]
+      ];
     });
   }
 
