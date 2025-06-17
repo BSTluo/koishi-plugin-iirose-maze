@@ -1,4 +1,4 @@
-import { Context, Schema } from 'koishi';
+import { Context, Schema, Session } from 'koishi';
 import maze from './maze';
 import mine from './mine';
 import river from './river';
@@ -29,18 +29,20 @@ export const host = 'http://127.0.0.1:17515';
 
 export function apply(ctx: Context)
 {
-  ctx.bots.forEach((bot) =>
+  ctx.once('message', (session: Session) =>
   {
-    const botId = bot.user.id;
-    for (let key in botConfig)
+    ctx.bots.forEach((bot) =>
     {
-      if (botConfig[key].includes(botId))
+      const botId = bot.user.id;
+      for (let key in botConfig)
       {
-        ctx.logger.info(`Loading plugin: ${key} for bot: ${botId}`);
-        ctx.plugin(pluginList[key]);
+        if (botConfig[key].includes(botId))
+        {
+          ctx.logger.info(`Loading plugin: ${key} for bot: ${botId}`);
+          ctx.plugin(pluginList[key]);
+        }
       }
-    }
+    });
   });
-
   ctx.plugin(core);
 }

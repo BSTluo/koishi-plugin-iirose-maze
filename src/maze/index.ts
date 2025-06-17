@@ -223,6 +223,7 @@ class Maze
 
     this.ctx.command('maze.run', '结束迷宫').alias('结束迷宫').action(async v =>
     {
+      // 战斗中退出组队需要惩罚(未完成)
       const uid = v.session.userId;
       const dataList = await this.ctx.database.get('mazeUserParty', { id: uid });
       let single = false;
@@ -231,23 +232,40 @@ class Maze
       {
         return v.session.send([h.at(v.session.username), '你不在任何组队中']);
       }
-
-      await this.ctx.database.remove('mazeUserParty', { id: uid });
-
       const useData = dataList[0];
-      // 未完成，此处需要将整局游戏结束，包括投票结束之类的
-      this.mazeGameList[useData.partyId].party.members = this.mazeGameList[useData.partyId].party.members.filter(member => member !== uid);
-
-      // 将此人从member中移除，都没人时删除
-      if (this.mazeGameList[useData.partyId].party.members.length === 0)
+      const partyId = useData.partyId;
+      await this.ctx.database.remove('mazeUserParty', { id: uid });
+      let party;
+      if (!this.mazeGameList[partyId])
       {
-        await this.ctx.database.remove('mazeParty', { id: useData.partyId });
+        const a = await this.ctx.database.get('mazeParty', { id: partyId });
+        if (a.length <= 0)
+        {
+          return [h.at(v.session.username), '组队不存在，请检查后重新输入'];
+        }
+        party = a[0];
+      } else
+      {
+        party = this.mazeGameList[partyId].party;
       }
-      this.mazeGameList[useData.partyId].userList = null;
-      this.mazeGameList[useData.partyId].monsterList = null;
+      // 未完成，此处需要将整局游戏结束，包括投票结束之类的
+      party.members = party.members.filter(member => member !== uid);
 
-      await this.mazeGameList[useData.partyId].stop('lose');
-      delete this.mazeGameList[useData.partyId];
+      await v.session.send([h.at(v.session.username), `你已退出组队${party.member.length > 0 ? ('，当前组队成员：' + party.members.join(', ')) : ''}`]);
+
+      if (party.members.length === 0)
+      {
+        await this.ctx.database.remove('mazeParty', { id: partyId });
+        if (this.mazeGameList[partyId])
+        {
+          this.mazeGameList[partyId].userList = null;
+          this.mazeGameList[partyId].monsterList = null;
+          await this.mazeGameList[partyId].stop('lose');
+          delete this.mazeGameList[partyId];
+        }
+
+        v.session.send([h.at(v.session.username), '因队伍无人，已解散']);
+      }
     });
   }
 
