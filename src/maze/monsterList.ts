@@ -58,6 +58,13 @@ export class MonsterList
 
   getMoney()
   {
+    let totalMoney = 0;
+    const length = this.createMonster.length;
+    for (const monster of this.createMonster)
+    {
+      totalMoney += monster.money;
+    }
 
+    return totalMoney / length; // 返回总经验值
   }
 }

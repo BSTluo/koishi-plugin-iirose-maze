@@ -12,7 +12,7 @@ export class MazeGame
   party: mazeParty;
   userList: UserList; // 用户列表对象
   monsterList: MonsterList; // 怪物列表对象
-
+  
   constructor(ctx: Context, session: Session, playerIdList: string[], party: mazeParty)
   {
     this.ctx = ctx; // 设置上下文
@@ -80,7 +80,7 @@ export class MazeGame
       '需要注意：治愈与的目标是己方'
     ]); // 提醒玩家输入指令
 
-    while (this.userList.userObjList.length > 0)
+    while (this.party.status === 'inGame')
     {
       for (const user of this.userList.userObjList)
       {
@@ -121,16 +121,27 @@ export class MazeGame
   }
 
   // 结束游戏
-  stop(status: 'win' | 'lose' | 'error')
+  async stop(status: 'win' | 'lose' | 'error')
   {
     if (status === 'win')
     {
       this.session.send([h.at(this.session.username), '恭喜你们，所有人都成功通关迷宫！']);
-      
-      for(let i=0; i < this.userList.joinUserObjList.length; i++)
+
+      for (let i = 0; i < this.userList.joinUserObjList.length; i++)
       {
         const user = this.userList.joinUserObjList[i];
-        
+        const exp = this.monsterList.getExp();
+        const money = this.monsterList.getMoney();
+        user.addExp(exp); // 增加经验值
+        user.addMoney(money); // 增加金钱
+
+        await user.updateUserData({
+          id: user.id,
+          level: user.level,
+          exp: user.exp,
+          money: user.money,
+          attributePoints: user.attributePoints,
+        });
       }
     } else if (status === 'lose')
     {
@@ -140,6 +151,6 @@ export class MazeGame
       this.session.send([h.at(this.session.username), '游戏发生错误，无法继续进行。']);
     }
 
-
+    this.party.status = 'completed'; // 更新组队状态为已完成
   }
 }

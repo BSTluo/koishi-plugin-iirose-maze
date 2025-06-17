@@ -8,7 +8,7 @@ import { MazeGame } from "./mazeGame";
 
 export class User
 {
-  playerId: string; // 用户ID
+  // playerId: string; // 用户ID
   partyId: string | null; // 组队ID
   status: 'free' | 'waiting' | 'inParty' | 'inGame-alive' | 'inGame-die';
   ctx: Context; // Koishi 上下文
@@ -35,10 +35,11 @@ export class User
   monsterList: MonsterList;
   mazeGame: MazeGame;
   baseMp: number;
+  attributePoints: number;
 
   constructor(playerId: string, ctx: Context, session: Session, mazeGame?: MazeGame)
   {
-    this.playerId = playerId; // 用户ID
+    this.id = playerId; // 用户ID
     this.partyId = null; // 组队ID
     this.status = 'waiting'; // 用户状态: 'waiting', 'inParty', 'inGame'
     this.ctx = ctx;
@@ -52,7 +53,7 @@ export class User
     let userData: User;
     try
     {
-      userData = await this.ctx.http.post(`${host}/user/get/info`, { id: this.playerId });
+      userData = await this.ctx.http.post(`${host}/user/get/info`, { id: this.id });
     } catch (err)
     {
       const errorMessage = err.response ? err.response.data : err.message;
@@ -66,7 +67,6 @@ export class User
       }
     }
 
-    this.id = userData.id; // 用户ID
     this.hp = userData.hp; // 用户生命值
     this.baseHp = userData.hp;
     this.mp = userData.mp; // 用户魔法值
@@ -84,6 +84,7 @@ export class User
     this.shieldBreak = userData.shieldBreak; // 护盾破坏力
     this.exp = userData.exp; // 用户经验值
     this.money = userData.money; // 用户金币
+    this.attributePoints = userData.attributePoints; // 属性点
 
     return this;
   }
@@ -240,7 +241,7 @@ export class User
 
   die()
   {
-    const index = this.mazeGame.userList.userIdList.indexOf(this.playerId);
+    const index = this.mazeGame.userList.userIdList.indexOf(this.id);
     if (index > -1)
     {
       this.mazeGame.userList.userObjList.splice(index, 1); // 从用户对象列表中移除自己
@@ -309,6 +310,43 @@ export class User
       default:
         this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
         this.physicalAttackSkill(monsterList.monsterList[0]);
+    }
+  }
+
+  addExp(exp: number)
+  {
+    this.exp += exp; // 增加经验值
+    this.session.send([h.at(this.session.username), `获得了 ${exp} 经验值，当前经验值：${this.exp}`]);
+    if (this.exp >= this.level * 100) // 假设每级需要100经验值
+    {
+      const needExp = this.level * 100;
+      this.level += 1; // 升级
+      this.exp -= needExp; // 重置经验值
+      this.attributePoints += 5; // 每次升级增加5点属性点
+      this.session.send([h.at(this.session.username), `你升级了，当前拥有属性点：${this.attributePoints}，当前等级：${this.level}`]);
+    }
+  }
+
+  addMoney(money: number)
+  {
+    this.money += money; // 增加金币
+    this.session.send([h.at(this.session.username), `获得了 ${money} 金币，当前金币：${this.money}`]);
+  }
+
+  async updateUserData(data: Partial<User> = {})
+  {
+    if (!this.id)
+    {
+      throw new Error('用户ID未设置，无法更新用户数据。');
+    }
+
+    try
+    {
+      await this.ctx.http.post(`${host}/user/update/data`, data);
+    } catch (err)
+    {
+      const errorMessage = err.response ? err.response.data : err.message;
+      throw new Error(`无法更新用户数据: ${errorMessage}`);
     }
   }
 }
