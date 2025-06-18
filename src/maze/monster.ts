@@ -70,6 +70,8 @@ export class Monster
     this.shieldBreak = monsterData.shieldBreak; // 护盾破坏力
     this.hp = this.hp + Math.floor(Math.random() * this.level); // 怪物生命值随机增加
     this.basicShieldValue = monsterData.shieldValue; // 保存基础护盾值
+    this.exp = monsterData.exp; // 怪物经验值
+    this.money = monsterData.money; // 怪物掉落金币
     return this;
   }
 
@@ -188,7 +190,7 @@ export class Monster
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    this.isDie(minHpUser, '魔法攻击');
+    await this.isDie(minHpUser, '魔法攻击');
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态

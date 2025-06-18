@@ -40,6 +40,13 @@ export class UserList
     this.userObjList = userDataList; // 设置用户对象列表
     this.joinUserObjList = clone(this.userObjList); // 设置加入的用户对象列表
     this.joinUserIdList = clone(this.userIdList); // 设置加入的用户ID列表
+
+    // 以下内容是clone函数的补丁，修补session不能被克隆的问题
+    for (const user of this.joinUserObjList)
+    {
+      user.session = this.session; // 修复session不能被克隆的问题
+    }
+    
     return this;
   }
 

@@ -282,7 +282,7 @@ class Maze
     const mazeGame = await (new MazeGame(this.ctx, session, playerIdList, party)).initialize();
     this.mazeGameList[party.id] = mazeGame; // 将游戏实例存储在列表中
     await mazeGame.start();
-    console.log('aaa');
+    delete this.mazeGameList[party.id];
   }
 
 }

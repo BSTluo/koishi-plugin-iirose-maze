@@ -321,21 +321,21 @@ export class User
   async addExp(exp: number)
   {
     this.exp += exp; // 增加经验值
-    await this.mazeGame.session.send([h.at(this.session.username), `获得了 ${exp} 经验值，当前经验值：${this.exp}`]);
+    await this.session.send([h.at(this.session.username), `获得了 ${exp} 经验值，当前经验值：${this.exp}`]);
     if (this.exp >= this.level * 100) // 假设每级需要100经验值
     {
       const needExp = this.level * 100;
       this.level += 1; // 升级
       this.exp -= needExp; // 重置经验值
       this.attributePoints += 5; // 每次升级增加5点属性点
-      await this.mazeGame.session.send([h.at(this.session.username), `你升级了，当前拥有属性点：${this.attributePoints}，当前等级：${this.level}`]);
+      await this.session.send([h.at(this.session.username), `你升级了，当前拥有属性点：${this.attributePoints}，当前等级：${this.level}`]);
     }
   }
 
   async addMoney(money: number)
   {
     this.money += money; // 增加金币
-    await this.mazeGame.session.send([h.at(this.session.username), `获得了 ${money} 金币，当前金币：${this.money}`]);
+    await this.session.send([h.at(this.session.username), `获得了 ${money} 金币，当前金币：${this.money}`]);
   }
 
   async updateUserData(data: Partial<User> = {})
