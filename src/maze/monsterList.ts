@@ -28,7 +28,6 @@ export class MonsterList
       this.monsterList.push(await monster.initialize());
     }
     this.createMonster = clone(this.monsterList);
-    console.log(this.createMonster);
     return this;
   }
 
@@ -47,7 +46,6 @@ export class MonsterList
   getExp()
   {
     let totalExp = 0;
-    console.log(this.createMonster);
 
     const length = this.createMonster.length;
     for (const monster of this.createMonster)

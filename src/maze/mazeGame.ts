@@ -66,9 +66,9 @@ export class MazeGame
   // 开始游戏
   async start()
   {
-    this.session.send('游戏开始，请准备好！'); // 发送游戏开始消息
-    this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
-    this.session.send([
+    await this.session.send('游戏开始，请准备好！'); // 发送游戏开始消息
+    await this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
+    await this.session.send([
       '请注意，游戏开始后，需要在规定时间内输入指令进行攻击。有如下的指令：\n',
       '物理攻击\n',
       '魔法攻击\n',
@@ -84,7 +84,7 @@ export class MazeGame
     {
       for (const user of this.userList.userObjList)
       {
-        this.session.send([
+        await this.session.send([
           h.at(this.session.username),
           '请在10秒内输入指令以及攻击目标（如：物理攻击 1），超时将自动物理攻击第一位。'
         ]);
@@ -96,7 +96,7 @@ export class MazeGame
 
         if (!input)
         {
-          this.session.send([h.at(this.session.username), '输入超时，自动进行物理攻击第一位。']);
+          await this.session.send([h.at(this.session.username), '输入超时，自动进行物理攻击第一位。']);
           input = '物理攻击 1'; // 如果没有输入，默认物理攻击第一位
         }
 
@@ -104,7 +104,7 @@ export class MazeGame
 
         if (!inputMagTemp)
         {
-          this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+          await this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
         } else
         {
           action = inputMagTemp[1]; // 获取动作
@@ -113,7 +113,7 @@ export class MazeGame
 
         // console.log(`用户 ${user.id} 执行动作：${action}，目标：${target}`);
 
-        user.action(action, target, this.userList, this.monsterList); // 执行用户动作
+        await user.action(action, target, this.userList, this.monsterList); // 执行用户动作
       }
 
       for (const monster of this.monsterList.monsterList)
@@ -128,7 +128,7 @@ export class MazeGame
   {
     if (status === 'win')
     {
-      this.session.send([h.at(this.session.username), '恭喜你们，所有人都成功通关迷宫！']);
+      await this.session.send([h.at(this.session.username), '恭喜你们，所有人都成功通关迷宫！']);
 
       for (let i = 0; i < this.userList.joinUserObjList.length; i++)
       {
@@ -148,10 +148,10 @@ export class MazeGame
       }
     } else if (status === 'lose')
     {
-      this.session.send([h.at(this.session.username), '很遗憾，所有人都死亡，游戏结束。']);
+      await this.session.send([h.at(this.session.username), '很遗憾，所有人都死亡，游戏结束。']);
     } else
     {
-      this.session.send([h.at(this.session.username), '游戏发生错误，无法继续进行。']);
+      await this.session.send([h.at(this.session.username), '游戏发生错误，无法继续进行。']);
     }
 
     this.party.status = 'completed'; // 更新组队状态为已完成

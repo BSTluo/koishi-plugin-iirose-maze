@@ -73,7 +73,7 @@ export class Monster
     return this;
   }
 
-  public async useSkill()
+  async useSkill()
   {
     // 随机使用一种技能
     // 1. 物理攻击
@@ -101,7 +101,7 @@ export class Monster
       }
 
       case (skillIndex >= 90 && skillIndex < 97): {
-        this.blockSkill();
+        await this.blockSkill();
         return;
       }
 
@@ -117,7 +117,7 @@ export class Monster
   }
 
   // 物理攻击
-  private async physicalAttackSkill()
+  async physicalAttackSkill()
   {
     const userListClass = this.userList;
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList.userObjList[Math.floor(Math.random() * this.userList.userObjList.length)];
@@ -140,21 +140,21 @@ export class Monster
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
-      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    this.isDie(minHpUser);
+    await this.isDie(minHpUser);
   }
 
   // 魔法攻击
-  private async magicAttackSkill()
+  async magicAttackSkill()
   {
     const userListClass = this.userList;
     const minHpUser = Math.floor(Math.random() * 2) == 0 ? userListClass.getMinHpUser() : this.userList.userObjList[Math.floor(Math.random() * this.userList.userObjList.length)];
@@ -177,10 +177,10 @@ export class Monster
     if (userActualShieldValue <= 0)
     {
       minHpUser.shieldValue = 0;
-      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾，护盾清空。`]);
     } else
     {
-      minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
@@ -193,30 +193,30 @@ export class Monster
   blockStatus: boolean = false; // 是否处于格挡状态
 
   // 格挡
-  public blockSkill()
+  async blockSkill()
   {
     this.mp -= 5;
     if (this.mp < 0)
     {
-      this.mazeGame.session.send([h.at(this.mazeGame.session.username), '魔法值不足，无法使用格挡技能。']);
+      await this.mazeGame.session.send([h.at(this.mazeGame.session.username), '魔法值不足，无法使用格挡技能。']);
       return; // 如果魔法值不足，直接返回
     }
     this.blockStatus = true;
-    this.mazeGame.session.send([this.name, '使用了格挡技能。']);
+    await this.mazeGame.session.send([this.name, '使用了格挡技能。']);
   }
 
   parryStatus: boolean = false; // 是否处于弹反状态
   // 弹反
-  public async parrySkill()
+  async parrySkill()
   {
     this.mp -= 10;
     if (this.mp < 0)
     {
-      this.mazeGame.session.send([h.at(this.mazeGame.session.username), '魔法值不足，无法使用弹反技能。']);
+      await this.mazeGame.session.send([h.at(this.mazeGame.session.username), '魔法值不足，无法使用弹反技能。']);
       return; // 如果魔法值不足，直接返回
     }
     this.parryStatus = true; // 设置弹反状态
-    this.mazeGame.session.send([this.name, '使用了弹反技能。']);
+    await this.mazeGame.session.send([this.name, '使用了弹反技能。']);
   }
 
   die()
@@ -232,18 +232,18 @@ export class Monster
       // 用户死亡逻辑
       user.status = 'inGame-die';
       // 更新用户状态
-      user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，死亡。`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，死亡。`]);
 
       user.die();
     } else
     {
       // 更新用户数据
-      user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${user.hp}`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${user.hp}`]);
     }
 
     if (this.userList.isDie())
     {
-      user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
+      await user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
       await this.mazeGame.stop('lose');
     }
   }

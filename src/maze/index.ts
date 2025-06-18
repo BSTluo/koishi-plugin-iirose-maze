@@ -171,7 +171,7 @@ class Maze
 
       if (dataList.length <= 0)
       {
-        v.session.send([h.at(v.session.username), '你不在任何组队中，是否进入单人模式?(请在10秒内输入yes或者no)']);
+        await v.session.send([h.at(v.session.username), '你不在任何组队中，是否进入单人模式?(请在10秒内输入yes或者no)']);
 
         const inputData = await v.session.prompt(10000);
 
@@ -230,7 +230,8 @@ class Maze
 
       if (dataList.length <= 0)
       {
-        return v.session.send([h.at(v.session.username), '你不在任何组队中']);
+        await v.session.send([h.at(v.session.username), '你不在任何组队中']);
+        return;
       }
       const useData = dataList[0];
       const partyId = useData.partyId;
@@ -265,7 +266,7 @@ class Maze
           delete this.mazeGameList[partyId];
         }
 
-        v.session.send([h.at(v.session.username), '因队伍无人，已解散']);
+        await v.session.send([h.at(v.session.username), '因队伍无人，已解散']);
       }
     });
   }
@@ -281,7 +282,7 @@ class Maze
     const mazeGame = await (new MazeGame(this.ctx, session, playerIdList, party)).initialize();
     this.mazeGameList[party.id] = mazeGame; // 将游戏实例存储在列表中
     await mazeGame.start();
-
+    console.log('aaa');
   }
 
 }

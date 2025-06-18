@@ -110,7 +110,7 @@ export class User
       monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
       monsterShieldBreak = 0; // 护盾破坏力也为0
       this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
-      this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
       return; // 直接返回，不进行后续计算
     }
 
@@ -136,7 +136,7 @@ export class User
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    this.isDie(monster);
+    await this.isDie(monster);
   }
 
   // 魔法攻击
@@ -183,12 +183,12 @@ export class User
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    this.isDie(monster);
+    await this.isDie(monster);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
   // 格挡
-  public blockSkill()
+  async blockSkill()
   {
     this.mp -= 5;
     if (this.mp < 0)
@@ -289,11 +289,11 @@ export class User
     {
       case '物理攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        this.physicalAttackSkill(monsterList.monsterList[target]);
+        await this.physicalAttackSkill(monsterList.monsterList[target]);
         break;
       case '魔法攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        this.magicAttackSkill(monsterList.monsterList[target]);
+        await this.magicAttackSkill(monsterList.monsterList[target]);
         break;
       case '格挡':
         this.blockSkill();
