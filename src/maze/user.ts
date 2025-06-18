@@ -60,7 +60,7 @@ export class User
       const errorMessage = err.response ? err.response.data : err.message;
       if (errorMessage == 'User not found')
       {
-        this.session.send('用户信息未找到，请先创建用户。\n\n使用指令maze help查看帮助信息。');
+        await this.session.send('用户信息未找到，请先创建用户。\n\n使用指令maze help查看帮助信息。');
         throw '用户信息未找到，请先创建用户。';
       } else
       {
@@ -173,10 +173,10 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾，护盾清空。`]);
+     await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余护盾值：${monster.shieldValue}。`]);
+     await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
@@ -193,12 +193,12 @@ export class User
     this.mp -= 5;
     if (this.mp < 0)
     {
-      this.session.send([h.at(this.session.username), '魔法值不足，无法使用格挡技能。']);
+      await this.session.send([h.at(this.session.username), '魔法值不足，无法使用格挡技能。']);
       return; // 如果魔法值不足，直接返回
     }
 
     this.blockStatus = true; // 设置为格挡状态
-    this.session.send([h.at(this.session.username), '使用了格挡技能。']);
+    await this.session.send([h.at(this.session.username), '使用了格挡技能。']);
   }
 
   parryStatus: boolean = false; // 是否处于弹反状态
@@ -208,12 +208,12 @@ export class User
     this.mp -= 10; // 扣除魔法值
     if (this.mp < 0)
     {
-      this.session.send([h.at(this.session.username), '魔法值不足，无法使用弹反技能。']);
+      await this.session.send([h.at(this.session.username), '魔法值不足，无法使用弹反技能。']);
       return; // 如果魔法值不足，直接返回
     }
 
     this.parryStatus = true; // 设置为弹反状态
-    this.session.send([h.at(this.session.username), '使用了弹反技能。']);
+    await this.session.send([h.at(this.session.username), '使用了弹反技能。']);
   }
 
   // 治疗技能
@@ -232,7 +232,7 @@ export class User
     }
 
     // 更新用户状态
-    user.session.send([h.at(user.id), `被 ${this.id} 使用治愈技能，恢复了 ${healingAmount} 点生命值，当前生命值：${user.hp}`]);
+    await user.session.send([h.at(user.id), `被 ${this.id} 使用治愈技能，恢复了 ${healingAmount} 点生命值，当前生命值：${user.hp}`]);
   }
 
   // 使用物品(下次做)
@@ -258,17 +258,17 @@ export class User
       monster.hp = 0;
       // 怪物死亡逻辑
       // 更新怪物状态
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，死亡。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，死亡。`]);
       monster.die();
     } else
     {
       // 更新怪物数据
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，剩余生命值：${monster.hp}`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，剩余生命值：${monster.hp}`]);
     }
 
     if (this.monsterList.isDie())
     {
-      this.session.send([h.at(this.session.username), '所有人都死亡，游戏结束。']);
+      await this.session.send([h.at(this.session.username), '所有怪物死亡，游戏结束。']);
       await this.mazeGame.stop('win');
     }
   }
@@ -313,7 +313,7 @@ export class User
       //   this.useItem(this.userList.userObjList[target]);
       //   break;
       default:
-        this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+        await this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
         this.physicalAttackSkill(monsterList.monsterList[0]);
     }
   }
