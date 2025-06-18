@@ -126,17 +126,17 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾，护盾清空。`]);
-    } else if(this.basicShieldValue > 0)
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾，护盾清空。`]);
+    } else if (this.basicShieldValue > 0)
     {
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余护盾值：${monster.shieldValue}。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    await this.isDie(monster);
+    await this.isDie(monster, '物理攻击');
   }
 
   // 魔法攻击
@@ -158,7 +158,7 @@ export class User
       monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
       monsterShieldBreak = 0; // 护盾破坏力也为0
       this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
-      this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
       return; // 直接返回，不进行后续计算
     }
 
@@ -183,7 +183,7 @@ export class User
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    await this.isDie(monster);
+    await this.isDie(monster, '魔法攻击');
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -251,19 +251,19 @@ export class User
     }
   }
 
-  async isDie(monster: Monster)
+  async isDie(monster: Monster, action: string)
   {
     if (monster.hp <= 0)
     {
       monster.hp = 0;
       // 怪物死亡逻辑
       // 更新怪物状态
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，死亡。`]);
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，死亡。`]);
       monster.die();
     } else
     {
       // 更新怪物数据
-      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余生命值：${monster.hp}`]);
+      this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，剩余生命值：${monster.hp}`]);
     }
 
     if (this.monsterList.isDie())
@@ -277,7 +277,10 @@ export class User
   {
     this.blockStatus = false; // 重置格挡状态
     this.parryStatus = false; // 重置弹反状态
+    this.basicShieldValue = this.shieldValue; // 重置基础护盾值
+
     this.mp += 2;
+
     if (this.mp > this.baseMp) { this.mp = this.baseMp; } // 确保魔法值不超过最大值
 
     this.userList = userList; // 设置用户列表

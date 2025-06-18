@@ -82,6 +82,7 @@ export class Monster
     // 4. 弹反
     this.blockStatus = false; // 重置格挡状态
     this.parryStatus = false; // 重置弹反状态
+    this.basicShieldValue = this.shieldValue; // 重置基础护盾值
 
     this.mp += 2;
     if (this.mp > this.baseMp) { this.mp = this.baseMp; } // 确保魔法值不超过最大值
@@ -150,7 +151,7 @@ export class Monster
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    await this.isDie(minHpUser);
+    await this.isDie(minHpUser, '物理攻击');
   }
 
   // 魔法攻击
@@ -174,11 +175,11 @@ export class Monster
     // 计算用户实际护盾值
     const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0)
+    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
       await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾，护盾清空。`]);
-    } else
+    } else if (this.basicShieldValue > 0)
     {
       await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
@@ -187,7 +188,7 @@ export class Monster
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    this.isDie(minHpUser);
+    this.isDie(minHpUser, '魔法攻击');
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -224,7 +225,7 @@ export class Monster
     this.mazeGame.monsterList.monsterList.splice(this.monsterIndex, 1); // 从怪物列表中移除自己
   }
 
-  async isDie(user: User)
+  async isDie(user: User, action: string)
   {
     if (user.hp <= 0)
     {
@@ -232,13 +233,13 @@ export class Monster
       // 用户死亡逻辑
       user.status = 'inGame-die';
       // 更新用户状态
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，死亡。`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，死亡。`]);
 
       user.die();
     } else
     {
       // 更新用户数据
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用魔法攻击，剩余生命值：${user.hp}`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，剩余生命值：${user.hp}`]);
     }
 
     if (this.userList.isDie())
