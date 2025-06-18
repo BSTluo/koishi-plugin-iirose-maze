@@ -135,8 +135,8 @@ export class MazeGame
         const user = this.userList.joinUserObjList[i];
         const exp = this.monsterList.getExp();
         const money = this.monsterList.getMoney();
-        user.addExp(exp); // 增加经验值
-        user.addMoney(money); // 增加金钱
+        await user.addExp(exp); // 增加经验值
+        await user.addMoney(money); // 增加金钱
 
         await user.updateUserData({
           id: user.id,
