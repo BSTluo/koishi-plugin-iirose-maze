@@ -111,7 +111,7 @@ export class MazeGame
           target = parseInt(inputMagTemp[2]) - 1 || 0; // 获取目标，默认第一位
         }
 
-        console.log(`用户 ${user.id} 执行动作：${action}，目标：${target}`);
+        // console.log(`用户 ${user.id} 执行动作：${action}，目标：${target}`);
 
         user.action(action, target, this.userList, this.monsterList); // 执行用户动作
       }

@@ -36,6 +36,7 @@ export class User
   mazeGame: MazeGame;
   baseMp: number;
   attributePoints: number;
+  basicShieldValue: number;
 
   constructor(playerId: string, ctx: Context, session: Session, mazeGame?: MazeGame)
   {
@@ -85,6 +86,7 @@ export class User
     this.exp = userData.exp; // 用户经验值
     this.money = userData.money; // 用户金币
     this.attributePoints = userData.attributePoints; // 属性点
+    this.basicShieldValue = userData.shieldBreak;
 
     return this;
   }
@@ -121,11 +123,11 @@ export class User
     // 计算怪物实际护盾值
     const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0)
+    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
       this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾，护盾清空。`]);
-    } else
+    } else if(this.basicShieldValue > 0)
     {
       this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余护盾值：${monster.shieldValue}。`]);
     }
@@ -168,11 +170,11 @@ export class User
     // 计算怪物实际护盾值
     const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0)
+    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
       this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾，护盾清空。`]);
-    } else
+    } else if (this.basicShieldValue > 0)
     {
       this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余护盾值：${monster.shieldValue}。`]);
     }

@@ -1,4 +1,4 @@
-import { Context, h } from "koishi";
+import { clone, Context, h } from "koishi";
 import { User } from "./user";
 import { UserList } from "./userList";
 import { Monster } from "./monster";
@@ -27,8 +27,8 @@ export class MonsterList
       const monster = new Monster(user, this.ctx, this.userListClass, this.mazeGame, i);
       this.monsterList.push(await monster.initialize());
     }
-
-    this.createMonster = this.monsterList;
+    this.createMonster = clone(this.monsterList);
+    console.log(this.createMonster);
     return this;
   }
 
@@ -47,6 +47,8 @@ export class MonsterList
   getExp()
   {
     let totalExp = 0;
+    console.log(this.createMonster);
+
     const length = this.createMonster.length;
     for (const monster of this.createMonster)
     {

@@ -27,6 +27,7 @@ export class Monster
   monsterIndex: number;
   exp: number; // 怪物经验值
   money: number; // 怪物掉落金币
+  basicShieldValue: number;
 
   constructor(user: User, ctx: Context, userList: UserList, mazeGame: MazeGame, monsterIndex: number)
   {
@@ -68,6 +69,7 @@ export class Monster
     this.shieldValue = monsterData.shieldValue; // 护盾值 
     this.shieldBreak = monsterData.shieldBreak; // 护盾破坏力
     this.hp = this.hp + Math.floor(Math.random() * this.level); // 怪物生命值随机增加
+    this.basicShieldValue = monsterData.shieldValue; // 保存基础护盾值
     return this;
   }
 
@@ -135,11 +137,11 @@ export class Monster
     // 计算用户实际护盾值
     const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0)
+    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
       minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾，护盾清空。`]);
-    } else
+    } else if (this.basicShieldValue > 0)
     {
       minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
     }

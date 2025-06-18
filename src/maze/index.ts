@@ -235,6 +235,7 @@ class Maze
       const useData = dataList[0];
       const partyId = useData.partyId;
       await this.ctx.database.remove('mazeUserParty', { id: uid });
+
       let party;
       if (!this.mazeGameList[partyId])
       {
@@ -251,7 +252,7 @@ class Maze
       // 未完成，此处需要将整局游戏结束，包括投票结束之类的
       party.members = party.members.filter(member => member !== uid);
 
-      await v.session.send([h.at(v.session.username), `你已退出组队${party.member.length > 0 ? ('，当前组队成员：' + party.members.join(', ')) : ''}`]);
+      await v.session.send([h.at(v.session.username), `你已退出组队${party.member ? ('，当前组队成员：' + party.members.join(', ')) : ''}`]);
 
       if (party.members.length === 0)
       {

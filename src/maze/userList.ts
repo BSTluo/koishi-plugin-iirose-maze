@@ -1,4 +1,4 @@
-import { Context, Session } from "koishi";
+import { clone, Context, Session } from "koishi";
 import { User } from "./user";
 import { mazeParty } from ".";
 import { MazeGame } from "./mazeGame";
@@ -38,8 +38,8 @@ export class UserList
       await this.ctx.database.upsert('mazeUserParty', [data]); // 更新或插入用户数据到数据库
     }
     this.userObjList = userDataList; // 设置用户对象列表
-    this.joinUserObjList = this.userObjList;
-    this.joinUserIdList = this.userIdList; // 设置加入的用户ID列表
+    this.joinUserObjList = clone(this.userObjList); // 设置加入的用户对象列表
+    this.joinUserIdList = clone(this.userIdList); // 设置加入的用户ID列表
     return this;
   }
 
@@ -68,10 +68,5 @@ export class UserList
       }
     }
     return true; // 所有用户的生命值都小于等于0，认为所有人都死亡
-  }
-
-  gameWin()
-  {
-
   }
 }
