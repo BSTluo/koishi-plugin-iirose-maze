@@ -67,7 +67,7 @@ export class Monster
     this.speed = monsterData.speed; // 速度
     this.healingPower = monsterData.healingPower; // 治疗量
     this.shieldValue = monsterData.shieldValue; // 护盾值 
-    this.shieldBreak = monsterData.shieldBreak; // 护盾破坏力
+    this.shieldBreak = (monsterData.shieldBreak) / 100;  // 护盾破坏力
     this.hp = this.hp + Math.floor(Math.random() * this.level); // 怪物生命值随机增加
     this.basicShieldValue = monsterData.shieldValue; // 保存基础护盾值
     this.exp = monsterData.exp; // 怪物经验值
@@ -130,7 +130,7 @@ export class Monster
     // 计算怪物物理攻击伤害(基础攻击力+暴击伤害)
     let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 1.5 : 0);
     // 计算怪物破盾能力(基础攻击力*护盾破坏值)
-    let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+    let monsterShieldBreak = Math.trunc(this.physicalAttack * (1 + this.shieldBreak));
 
     if (minHpUser.blockStatus)
     {
@@ -187,7 +187,7 @@ export class Monster
     // 计算怪物魔法攻击伤害(基础魔法攻击力+暴击伤害)
     let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 1.5 : 0);
     // 计算怪物破盾能力(基础魔法攻击力*护盾破坏值)
-    let monsterShieldBreak = this.magicAttack * this.shieldBreak;
+    let monsterShieldBreak = Math.trunc(this.physicalAttack * (1 + this.shieldBreak));
 
     if (minHpUser.blockStatus)
     {

@@ -80,7 +80,7 @@ export class User
     this.speed = userData.speed; // 速度
     this.healingPower = userData.healingPower; // 治疗量
     this.shieldValue = userData.shieldValue; // 护盾值
-    this.shieldBreak = userData.shieldBreak; // 护盾破坏力
+    this.shieldBreak = (userData.shieldBreak) / 100; // 护盾破坏力
     this.exp = userData.exp; // 用户经验值
     this.money = userData.money; // 用户金币
     this.attributePoints = userData.attributePoints; // 属性点
@@ -95,7 +95,7 @@ export class User
     // 计算自己的物理攻击伤害(基础攻击力+暴击伤害)
     let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 1.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
-    let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+    let monsterShieldBreak = Math.trunc(this.physicalAttack * (1 + this.shieldBreak));
 
     if (monster.blockStatus)
     {
@@ -147,7 +147,7 @@ export class User
     // 计算自己的魔法攻击伤害(基础攻击力+暴击伤害)
     let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 1.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
-    let monsterShieldBreak = this.magicAttack * this.shieldBreak;
+    let monsterShieldBreak = Math.trunc(this.physicalAttack * (1 + this.shieldBreak));
 
     if (monster.blockStatus)
     {
