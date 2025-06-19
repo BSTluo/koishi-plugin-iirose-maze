@@ -57,7 +57,6 @@ export class MazeGame
     {
       const monster = this.monsterList.monsterList[i]; // 获取怪物信息
       openingMessage += `${i + 1}. ${monster.name} HP：${monster.hp}\n`;
-      i++;
     }
 
     return openingMessage; // 返回怪物信息
@@ -84,19 +83,19 @@ export class MazeGame
     {
       for (const user of this.userList.userObjList)
       {
-        await this.session.send([
-          h.at(this.session.username),
+        await user.session.send([
+          h.at(user.id),
           '请在10秒内输入指令以及攻击目标（如：物理攻击 1），超时将自动物理攻击第一位。'
         ]);
 
-        let input = await this.session.prompt(10000);
+        let input = await user.session.prompt(10000);
 
         let action = '物理攻击'; // 默认动作为物理攻击
         let target = 0; // 默认目标为第一位
 
         if (!input)
         {
-          await this.session.send([h.at(this.session.username), '输入超时，自动进行物理攻击第一位。']);
+          await user.session.send([h.at(user.id), '输入超时，自动进行物理攻击第一位。']);
           input = '物理攻击 1'; // 如果没有输入，默认物理攻击第一位
         }
 
@@ -105,7 +104,7 @@ export class MazeGame
 
         if (!inputMagTemp && !inputBlockTemp)
         {
-          await this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+          await user.session.send([h.at(user.id), '输入无效，自动进行物理攻击第一位。']);
         } else if (inputMagTemp)
         {
           action = inputMagTemp[1]; // 获取动作

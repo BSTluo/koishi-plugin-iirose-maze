@@ -113,7 +113,7 @@ class Maze
       {
         return [h.at(v.session.username), '你已经在这个组队中了'];
       }
-      party.members.push();
+      party.members.push(uid);
 
       if (party.members.length > 4)
       {
@@ -127,7 +127,15 @@ class Maze
 
       await this.ctx.database.set('mazeParty', { id: partyid }, { members: party.members });
 
-      return [h.at(v.session.username), `加入组队成功，组队ID为 ${partyid}，当前成员：${party.members.join(', ')}`];
+      let userList = [];
+
+      for (let i = 0; i < party.members.length; i++) {
+        userList.push(`${i+1}.`)
+        userList.push(h.at(party.members[i]));
+        userList.push('\n');
+      }
+
+      return [h.at(v.session.username), `加入组队成功，组队ID为 ${partyid}，当前成员：\n\n`].concat(userList);
     });
 
     this.ctx.command('maze.leave', '退出迷宫组队').alias('退出迷宫组队').action(async v =>
@@ -250,10 +258,11 @@ class Maze
       {
         party = this.mazeGameList[partyId].party;
       }
+      
       // 未完成，此处需要将整局游戏结束，包括投票结束之类的
       party.members = party.members.filter(member => member !== uid);
 
-      await v.session.send([h.at(v.session.username), `你已退出组队${party.member ? ('，当前组队成员：' + party.members.join(', ')) : ''}`]);
+      await v.session.send([h.at(v.session.username), `你已退出组队${party.hasOwnProperty('members') ? ('，当前组队成员：' + party.members.join(', ')) : ''}`]);
 
       if (party.members.length === 0)
       {
@@ -267,6 +276,8 @@ class Maze
         }
 
         await v.session.send([h.at(v.session.username), '因队伍无人，已解散']);
+      } else {
+        await this.ctx.database.set('mazeParty', { id: partyId }, { members: party.members });
       }
     });
   }
@@ -295,4 +306,7 @@ export default Maze;
 // 升级的属性点可以点在开局金币上
 
 // 分配属性点的命令
-// 格挡也有目标
+
+
+// 重大bug：
+// user类的session来自userlist类的session，而userlist的session来自mazeGame类的session，最终他们都来自触发maze.start的session，无法做到多平台一起玩

@@ -27,6 +27,7 @@ export class MonsterList
       const monster = new Monster(user, this.ctx, this.userListClass, this.mazeGame, i);
       this.monsterList.push(await monster.initialize());
     }
+
     this.createMonster = clone(this.monsterList);
     return this;
   }

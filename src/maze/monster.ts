@@ -144,7 +144,7 @@ export class Monster
       monsterShieldBreak = 0; // 护盾破坏力也为0
       const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
       this.hp -= parryDamage;
-      await minHpUser.session.send([h.at(minHpUser.session.username), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -159,10 +159,10 @@ export class Monster
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
@@ -201,7 +201,7 @@ export class Monster
       monsterShieldBreak = 0; // 护盾破坏力也为0
       const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
       this.hp -= parryDamage;
-      await minHpUser.session.send([h.at(minHpUser.session.username), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -216,10 +216,10 @@ export class Monster
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
@@ -274,18 +274,18 @@ export class Monster
       // 用户死亡逻辑
       user.status = 'inGame-die';
       // 更新用户状态
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}伤害，死亡。`]);
+      await user.session.send([h.at(user.id), `被 ${this.name} 使用${action}，受到${damage}伤害，死亡。`]);
 
       user.die();
     } else
     {
       // 更新用户数据
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}伤害，剩余生命值：${user.hp}`]);
+      await user.session.send([h.at(user.id), `被 ${this.name} 使用${action}，受到${damage}伤害，剩余生命值：${user.hp}`]);
     }
 
     if (this.userList.isDie())
     {
-      await user.session.send([h.at(user.session.username), '所有人都死亡，游戏结束。']);
+      await user.session.send([h.at(user.id), '所有人都死亡，游戏结束。']);
       await this.mazeGame.stop('lose');
     }
   }

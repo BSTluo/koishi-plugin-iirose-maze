@@ -9,7 +9,6 @@ import { MazeGame } from "./mazeGame";
 export class User
 {
   // playerId: string; // 用户ID
-  partyId: string | null; // 组队ID
   status: 'free' | 'waiting' | 'inParty' | 'inGame-alive' | 'inGame-die';
   ctx: Context; // Koishi 上下文
   id: string;
@@ -41,7 +40,6 @@ export class User
   constructor(playerId: string, ctx: Context, session: Session, mazeGame?: MazeGame)
   {
     this.id = playerId; // 用户ID
-    this.partyId = null; // 组队ID
     this.status = 'waiting'; // 用户状态: 'waiting', 'inParty', 'inGame'
     this.ctx = ctx;
     this.session = session; // 用户会话
@@ -111,7 +109,7 @@ export class User
       monsterShieldBreak = 0; // 护盾破坏力也为0
       const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
       this.hp -= parryDamage;
-      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}。`]);
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.id), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -127,10 +125,10 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
@@ -163,7 +161,7 @@ export class User
       monsterShieldBreak = 0; // 护盾破坏力也为0
       const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
       this.hp -= parryDamage;
-      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.id), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -178,10 +176,10 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
@@ -201,12 +199,12 @@ export class User
     this.mp -= 5;
     if (this.mp < 0)
     {
-      await this.session.send([h.at(this.session.username), '魔法值不足，无法使用格挡技能。']);
+      await this.session.send([h.at(this.id), '魔法值不足，无法使用格挡技能。']);
       return; // 如果魔法值不足，直接返回
     }
 
     this.blockStatus = true; // 设置为格挡状态
-    await this.session.send([h.at(this.session.username), '使用了格挡技能。']);
+    await this.session.send([h.at(this.id), '使用了格挡技能。']);
   }
 
   parryStatus: boolean = false; // 是否处于弹反状态
@@ -216,12 +214,12 @@ export class User
     this.mp -= 10; // 扣除魔法值
     if (this.mp < 0)
     {
-      await this.session.send([h.at(this.session.username), '魔法值不足，无法使用弹反技能。']);
+      await this.session.send([h.at(this.id), '魔法值不足，无法使用弹反技能。']);
       return; // 如果魔法值不足，直接返回
     }
 
     this.parryStatus = true; // 设置为弹反状态
-    await this.session.send([h.at(this.session.username), '使用了弹反技能。']);
+    await this.session.send([h.at(this.id), '使用了弹反技能。']);
   }
 
   // 治疗技能
@@ -266,17 +264,17 @@ export class User
       monster.hp = 0;
       // 怪物死亡逻辑
       // 更新怪物状态
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}伤害，死亡。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用${action}，受到${damage}伤害，死亡。`]);
       monster.die();
     } else
     {
       // 更新怪物数据
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}伤害，剩余生命值：${monster.hp}`]);
+      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用${action}，受到${damage}伤害，剩余生命值：${monster.hp}`]);
     }
 
     if (this.monsterList.isDie())
     {
-      await this.session.send([h.at(this.session.username), '所有怪物死亡，游戏结束。']);
+      await this.session.send([h.at(this.id), '所有怪物死亡，游戏结束。']);
       await this.mazeGame.stop('win');
     }
   }
@@ -321,7 +319,7 @@ export class User
       //   this.useItem(this.userList.userObjList[target]);
       //   break;
       default:
-        await this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
+        await this.session.send([h.at(this.id), '输入无效，自动进行物理攻击第一位。']);
         this.physicalAttackSkill(monsterList.monsterList[0]);
     }
   }
@@ -329,21 +327,21 @@ export class User
   async addExp(exp: number)
   {
     this.exp += exp; // 增加经验值
-    await this.session.send([h.at(this.session.username), `获得了 ${exp} 经验值，当前经验值：${this.exp}`]);
+    await this.session.send([h.at(this.id), `获得了 ${exp} 经验值，当前经验值：${this.exp}`]);
     if (this.exp >= this.level * 100) // 假设每级需要100经验值
     {
       const needExp = this.level * 100;
       this.level += 1; // 升级
       this.exp -= needExp; // 重置经验值
       this.attributePoints += 5; // 每次升级增加5点属性点
-      await this.session.send([h.at(this.session.username), `你升级了，当前拥有属性点：${this.attributePoints}，当前等级：${this.level}`]);
+      await this.session.send([h.at(this.id), `你升级了，当前拥有属性点：${this.attributePoints}，当前等级：${this.level}`]);
     }
   }
 
   async addMoney(money: number)
   {
     this.money += money; // 增加金币
-    await this.session.send([h.at(this.session.username), `获得了 ${money} 金币，当前金币：${this.money}`]);
+    await this.session.send([h.at(this.id), `获得了 ${money} 金币，当前金币：${this.money}`]);
   }
 
   async updateUserData(data: Partial<User> = {})

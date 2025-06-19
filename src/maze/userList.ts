@@ -46,7 +46,7 @@ export class UserList
     {
       user.session = this.session; // 修复session不能被克隆的问题
     }
-    
+
     return this;
   }
 
