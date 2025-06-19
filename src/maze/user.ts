@@ -133,10 +133,13 @@ export class User
     }
 
     // 计算怪物实际伤害
-    monster.hp = monster.hp + userDefense - monsterDamage;
-    if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
+    let damage = userDefense - monsterDamage;
 
-    await this.isDie(monster, '物理攻击', userDefense - monsterDamage);
+    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
+
+    monster.hp = monster.hp + damage;
+
+    await this.isDie(monster, '物理攻击', damage);
   }
 
   // 魔法攻击
@@ -180,10 +183,13 @@ export class User
     }
 
     // 计算怪物实际伤害
-    monster.hp = monster.hp + userDefense - monsterDamage;
-    if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
+    let damage = userDefense - monsterDamage;
 
-    await this.isDie(monster, '魔法攻击', userDefense - monsterDamage);
+    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
+
+    monster.hp = monster.hp + damage;
+
+    await this.isDie(monster, '魔法攻击', damage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -258,12 +264,12 @@ export class User
       monster.hp = 0;
       // 怪物死亡逻辑
       // 更新怪物状态
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}点伤害，死亡。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}伤害，死亡。`]);
       monster.die();
     } else
     {
       // 更新怪物数据
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}点伤害，剩余生命值：${monster.hp}`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}伤害，剩余生命值：${monster.hp}`]);
     }
 
     if (this.monsterList.isDie())

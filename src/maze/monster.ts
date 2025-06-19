@@ -150,10 +150,14 @@ export class Monster
     }
 
     // 计算用户实际伤害
-    minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
-    if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
+    let damage = userDefense - monsterDamage;
 
-    await this.isDie(minHpUser, '物理攻击', userDefense - monsterDamage);
+    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
+
+    minHpUser.hp = minHpUser.hp + damage;
+
+    await this.isDie(minHpUser, '物理攻击', damage);
+
   }
 
   // 魔法攻击
@@ -187,10 +191,13 @@ export class Monster
     }
 
     // 计算用户实际伤害
-    minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
-    if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
+    let damage = userDefense - monsterDamage;
 
-    await this.isDie(minHpUser, '魔法攻击', userDefense - monsterDamage);
+    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
+
+    minHpUser.hp = minHpUser.hp + damage;
+
+    await this.isDie(minHpUser, '魔法攻击', damage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -235,13 +242,13 @@ export class Monster
       // 用户死亡逻辑
       user.status = 'inGame-die';
       // 更新用户状态
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}点伤害，死亡。`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}伤害，死亡。`]);
 
       user.die();
     } else
     {
       // 更新用户数据
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}点伤害，剩余生命值：${user.hp}`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}伤害，剩余生命值：${user.hp}`]);
     }
 
     if (this.userList.isDie())

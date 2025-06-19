@@ -160,8 +160,6 @@ export class MazeGame
       await this.session.send([h.at(this.session.username), '游戏发生错误，无法继续进行。']);
     }
 
-    this.party.status = 'completed'; // 更新组队状态为已完成
-
     for (let i = 0; i < this.userList.joinUserObjList.length; i++)
     {
       const user = this.userList.joinUserObjList[i];
