@@ -109,8 +109,9 @@ export class User
     {
       monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
       monsterShieldBreak = 0; // 护盾破坏力也为0
-      this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
-      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
+      this.hp -= parryDamage;
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -160,8 +161,9 @@ export class User
     {
       monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
       monsterShieldBreak = 0; // 护盾破坏力也为0
-      this.hp -= (monsterDamage + monsterShieldBreak) * 0.1;
-      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), '受到反弹伤害。']);
+      const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
+      this.hp -= parryDamage;
+      await this.session.send([monster.name, '使用了弹反技能，', h.at(this.session.username), `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
       return; // 直接返回，不进行后续计算
     }
 
@@ -305,14 +307,14 @@ export class User
         await this.magicAttackSkill(monsterList.monsterList[target]);
         break;
       case '格挡':
-        this.blockSkill();
+        await this.blockSkill();
         break;
       case '弹反':
-        this.parrySkill();
+        await this.parrySkill();
         break;
       case '治愈':
         if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
-        this.healingSkill(this.userList.userObjList[target]);
+        await this.healingSkill(this.userList.userObjList[target]);
         break;
       // case '道具使用':
       //   if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }

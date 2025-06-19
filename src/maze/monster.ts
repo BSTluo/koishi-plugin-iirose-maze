@@ -128,9 +128,25 @@ export class Monster
     if (!minHpUser) return;
 
     // 计算怪物物理攻击伤害(基础攻击力+暴击伤害)
-    const monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
+    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
     // 计算怪物破盾能力(基础攻击力*护盾破坏值)
-    const monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+    let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
+
+    if (minHpUser.blockStatus)
+    {
+      monsterDamage *= 0.5; // 如果怪物处于格挡状态，伤害减半
+      monsterShieldBreak *= 0.5; // 护盾破坏力也减半
+    }
+
+    if (minHpUser.parryStatus)
+    {
+      monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
+      monsterShieldBreak = 0; // 护盾破坏力也为0
+      const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
+      this.hp -= parryDamage;
+      await minHpUser.session.send([h.at(minHpUser.session.username), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
+      return; // 直接返回，不进行后续计算
+    }
 
     // 计算用户物理防御
     const userDefense = minHpUser.physicalDefense;
@@ -169,9 +185,25 @@ export class Monster
     if (!minHpUser) return;
 
     // 计算怪物魔法攻击伤害(基础魔法攻击力+暴击伤害)
-    const monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
     // 计算怪物破盾能力(基础魔法攻击力*护盾破坏值)
-    const monsterShieldBreak = this.magicAttack * this.shieldBreak;
+    let monsterShieldBreak = this.magicAttack * this.shieldBreak;
+
+    if (minHpUser.blockStatus)
+    {
+      monsterDamage *= 0.5; // 如果怪物处于格挡状态，伤害减半
+      monsterShieldBreak *= 0.5; // 护盾破坏力也减半
+    }
+
+    if (minHpUser.parryStatus)
+    {
+      monsterDamage = 0; // 如果怪物处于弹反状态，伤害为0
+      monsterShieldBreak = 0; // 护盾破坏力也为0
+      const parryDamage = (monsterDamage + monsterShieldBreak) * 0.1; // 弹反伤害
+      this.hp -= parryDamage;
+      await minHpUser.session.send([h.at(minHpUser.session.username), '使用了弹反技能，', this.name, `受到反弹伤害${parryDamage}点，剩余生命值：${this.hp}点。`]);
+      return; // 直接返回，不进行后续计算
+    }
 
     // 计算用户魔法防御
     const userDefense = minHpUser.magicDefense;
