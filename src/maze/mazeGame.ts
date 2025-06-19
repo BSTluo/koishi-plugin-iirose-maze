@@ -151,6 +151,7 @@ export class MazeGame
           attributePoints: user.attributePoints,
         });
       }
+      await this.session.send([h.at(this.session.username), '组队成员已全部移除，组队已解散。']);
     } else if (status === 'lose')
     {
       await this.session.send([h.at(this.session.username), '很遗憾，所有人都死亡，游戏结束。']);
@@ -160,5 +161,19 @@ export class MazeGame
     }
 
     this.party.status = 'completed'; // 更新组队状态为已完成
+
+    for (let i = 0; i < this.userList.joinUserObjList.length; i++)
+    {
+      const user = this.userList.joinUserObjList[i];
+
+      this.party.members.splice(this.party.members.indexOf(user.id), 1); // 从组队成员中移除用户
+
+      await this.ctx.database.remove('mazeUserParty', { id: user.id });
+    }
+
+    if (this.party.members.length === 0)
+    {
+      await this.ctx.database.remove('mazeParty', { id: this.party.id }); // 如果组队成员为空，删除组队信息
+    }
   }
 }
