@@ -80,7 +80,7 @@ export class MazeGame
       '需要注意：治愈与的目标是己方'
     ]); // 提醒玩家输入指令
 
-    while (this.party.status === 'inGame')
+    while (this.party.status == 'inGame')
     {
       for (const user of this.userList.userObjList)
       {
@@ -173,5 +173,7 @@ export class MazeGame
     {
       await this.ctx.database.remove('mazeParty', { id: this.party.id }); // 如果组队成员为空，删除组队信息
     }
+
+    this.party.status = 'completed';
   }
 }
