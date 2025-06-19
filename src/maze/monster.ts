@@ -143,17 +143,17 @@ export class Monster
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    await this.isDie(minHpUser, '物理攻击');
+    await this.isDie(minHpUser, '物理攻击', userDefense - monsterDamage);
   }
 
   // 魔法攻击
@@ -180,17 +180,17 @@ export class Monster
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾，护盾清空。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击，剩余护盾值：${minHpUser.shieldValue}。`]);
+      await minHpUser.session.send([h.at(minHpUser.session.username), `被 ${this.name} 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
     }
 
     // 计算用户实际伤害
     minHpUser.hp = minHpUser.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { minHpUser.hp = minHpUser.hp += userActualShieldValue; }
 
-    await this.isDie(minHpUser, '魔法攻击');
+    await this.isDie(minHpUser, '魔法攻击', userDefense - monsterDamage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -227,7 +227,7 @@ export class Monster
     this.mazeGame.monsterList.monsterList.splice(this.monsterIndex, 1); // 从怪物列表中移除自己
   }
 
-  async isDie(user: User, action: string)
+  async isDie(user: User, action: string, damage: number)
   {
     if (user.hp <= 0)
     {
@@ -235,13 +235,13 @@ export class Monster
       // 用户死亡逻辑
       user.status = 'inGame-die';
       // 更新用户状态
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，死亡。`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}点伤害，死亡。`]);
 
       user.die();
     } else
     {
       // 更新用户数据
-      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，剩余生命值：${user.hp}`]);
+      await user.session.send([h.at(user.session.username), `被 ${this.name} 使用${action}，受到${damage}点伤害，剩余生命值：${user.hp}`]);
     }
 
     if (this.userList.isDie())

@@ -126,17 +126,17 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾，护盾清空。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击，剩余护盾值：${monster.shieldValue}。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    await this.isDie(monster, '物理攻击');
+    await this.isDie(monster, '物理攻击', userDefense - monsterDamage);
   }
 
   // 魔法攻击
@@ -173,17 +173,17 @@ export class User
     if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
     {
       monster.shieldValue = 0;
-     await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾，护盾清空。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
     } else if (this.basicShieldValue > 0)
     {
-     await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击，剩余护盾值：${monster.shieldValue}。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
     }
 
     // 计算怪物实际伤害
     monster.hp = monster.hp + userDefense - monsterDamage;
     if (userActualShieldValue <= 0) { monster.hp = monster.hp += userActualShieldValue; }
 
-    await this.isDie(monster, '魔法攻击');
+    await this.isDie(monster, '魔法攻击', userDefense - monsterDamage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
@@ -251,19 +251,19 @@ export class User
     }
   }
 
-  async isDie(monster: Monster, action: string)
+  async isDie(monster: Monster, action: string, damage: number)
   {
     if (monster.hp <= 0)
     {
       monster.hp = 0;
       // 怪物死亡逻辑
       // 更新怪物状态
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，死亡。`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}点伤害，死亡。`]);
       monster.die();
     } else
     {
       // 更新怪物数据
-      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，剩余生命值：${monster.hp}`]);
+      await this.session.send([monster.name, '被 ', h.at(this.session.username), ` 使用${action}，受到${damage}点伤害，剩余生命值：${monster.hp}`]);
     }
 
     if (this.monsterList.isDie())

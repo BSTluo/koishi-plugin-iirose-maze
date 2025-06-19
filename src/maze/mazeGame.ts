@@ -100,15 +100,20 @@ export class MazeGame
           input = '物理攻击 1'; // 如果没有输入，默认物理攻击第一位
         }
 
-        const inputMagTemp = input.match(/(物理攻击|魔法攻击|格挡|弹反|治愈|道具使用)\s+(\d+)?/);
+        const inputMagTemp = input.match(/(物理攻击|魔法攻击|治愈|道具使用)\s+(\d+)?/);
+        const inputBlockTemp = input.match(/(格挡|弹反)/);
 
-        if (!inputMagTemp)
+        if (!inputMagTemp && !inputBlockTemp)
         {
           await this.session.send([h.at(this.session.username), '输入无效，自动进行物理攻击第一位。']);
-        } else
+        } else if (inputMagTemp)
         {
           action = inputMagTemp[1]; // 获取动作
-          target = parseInt(inputMagTemp[2]) - 1 || 0; // 获取目标，默认第一位
+          target = inputMagTemp[2] ? parseInt(inputMagTemp[2]) - 1 : 0;// 获取目标，默认第一位
+        } else if (inputBlockTemp)
+        {
+          action = inputBlockTemp[1]; // 获取动作
+          target = 0; // 格挡和弹反没有目标，默认设置为0
         }
 
         // console.log(`用户 ${user.id} 执行动作：${action}，目标：${target}`);
