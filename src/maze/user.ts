@@ -72,9 +72,9 @@ export class User
     this.baseMp = userData.mp; // 用户基础魔法值
     this.level = userData.level; // 用户等级
     this.physicalAttack = userData.physicalAttack; // 物理攻击力
-    this.physicalCrit = userData.physicalCrit; // 物理暴击率
+    this.physicalCrit = (userData.physicalCrit) / 100; // 物理暴击率
     this.magicAttack = userData.magicAttack; // 魔法攻击力
-    this.magicCrit = userData.magicCrit; // 魔法暴击率
+    this.magicCrit = (userData.magicCrit) / 100; // 魔法暴击率
     this.physicalDefense = userData.physicalDefense; // 物理防御力
     this.magicDefense = userData.magicDefense; // 魔法防御力
     this.speed = userData.speed; // 速度
@@ -93,7 +93,7 @@ export class User
   async physicalAttackSkill(monster: Monster)
   {
     // 计算自己的物理攻击伤害(基础攻击力+暴击伤害)
-    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
+    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 1.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
     let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
 
@@ -145,7 +145,7 @@ export class User
   async magicAttackSkill(monster: Monster)
   {
     // 计算自己的魔法攻击伤害(基础攻击力+暴击伤害)
-    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 1.5 : 0);
     // 计算自己的破盾能力(基础攻击力*护盾破坏值)
     let monsterShieldBreak = this.magicAttack * this.shieldBreak;
 

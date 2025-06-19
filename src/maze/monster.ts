@@ -59,9 +59,9 @@ export class Monster
     this.mp = monsterData.mp; // 怪物魔法值
     this.baseMp = monsterData.mp; // 怪物基础魔法值
     this.physicalAttack = monsterData.physicalAttack; // 物理攻击力
-    this.physicalCrit = monsterData.physicalCrit; // 物理暴击率
+    this.physicalCrit = (monsterData.physicalCrit) / 100; // 物理暴击率
     this.magicAttack = monsterData.magicAttack; // 魔法攻击力
-    this.magicCrit = monsterData.magicCrit; // 魔法暴击率
+    this.magicCrit = (monsterData.magicCrit) / 100; // 魔法暴击率
     this.physicalDefense = monsterData.physicalDefense; // 物理防御力
     this.magicDefense = monsterData.magicDefense; // 魔法防御力
     this.speed = monsterData.speed; // 速度
@@ -128,7 +128,7 @@ export class Monster
     if (!minHpUser) return;
 
     // 计算怪物物理攻击伤害(基础攻击力+暴击伤害)
-    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 0.5 : 0);
+    let monsterDamage = this.physicalAttack + (this.physicalCrit > Math.random() ? this.physicalAttack * 1.5 : 0);
     // 计算怪物破盾能力(基础攻击力*护盾破坏值)
     let monsterShieldBreak = this.physicalAttack * this.shieldBreak;
 
@@ -185,7 +185,7 @@ export class Monster
     if (!minHpUser) return;
 
     // 计算怪物魔法攻击伤害(基础魔法攻击力+暴击伤害)
-    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 0.5 : 0);
+    let monsterDamage = this.magicAttack + (this.magicCrit > Math.random() ? this.magicAttack * 1.5 : 0);
     // 计算怪物破盾能力(基础魔法攻击力*护盾破坏值)
     let monsterShieldBreak = this.magicAttack * this.shieldBreak;
 
