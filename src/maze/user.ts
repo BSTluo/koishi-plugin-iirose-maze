@@ -113,32 +113,37 @@ export class User
       return; // 直接返回，不进行后续计算
     }
 
-
-    // 计算怪物物理防御
-    const userDefense = monster.physicalDefense;
-    // 计算怪物护盾值
+    // 计算用户护盾值
     const userShieldValue = monster.shieldValue;
 
-    // 计算怪物实际护盾值
-    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+    if (userShieldValue > 0)
+    {
+      // 计算用户实际护盾值
+      const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
+      if (userActualShieldValue <= 0)
+      {
+        monster.shieldValue = 0;
+        await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
+        return;
+      } else if (this.basicShieldValue > 0)
+      {
+        await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+        return;
+      }
+    } else
     {
-      monster.shieldValue = 0;
-      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
-    } else if (this.basicShieldValue > 0)
-    {
-      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+      // 计算用户物理防御
+      const userDefense = monster.physicalDefense;
+
+      let monsterShieldBreak = Math.trunc(this.physicalAttack * (0.5 + this.shieldBreak));
+      let damage = userDefense - monsterDamage + monsterShieldBreak;
+
+      if (damage > 0) { damage = 0; } // 确保伤害不为负数
+
+      monster.hp = monster.hp + damage;
+      await this.isDie(monster, '物理攻击', damage);
     }
-
-    // 计算怪物实际伤害
-    let damage = userDefense - monsterDamage;
-
-    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
-
-    monster.hp = monster.hp + damage;
-
-    await this.isDie(monster, '物理攻击', damage);
   }
 
   // 魔法攻击
@@ -165,31 +170,38 @@ export class User
       return; // 直接返回，不进行后续计算
     }
 
-    // 计算怪物魔法防御
-    const userDefense = monster.magicDefense;
-    // 计算怪物护盾值
+    // 计算用户护盾值
     const userShieldValue = monster.shieldValue;
 
-    // 计算怪物实际护盾值
-    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+    if (userShieldValue > 0)
+    {
+      // 计算用户实际护盾值
+      const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
+      if (userActualShieldValue <= 0)
+      {
+        monster.shieldValue = 0;
+        await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
+        return;
+      } else if (this.basicShieldValue > 0)
+      {
+        await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+        return;
+      }
+    } else
     {
-      monster.shieldValue = 0;
-      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
-    } else if (this.basicShieldValue > 0)
-    {
-      await this.session.send([monster.name, '被 ', h.at(this.id), ` 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${monster.shieldValue}。`]);
+      // 计算用户物理防御
+      const userDefense = monster.physicalDefense;
+
+      let monsterShieldBreak = Math.trunc(this.physicalAttack * (0.5 + this.shieldBreak));
+      let damage = userDefense - monsterDamage + monsterShieldBreak;
+
+      if (damage > 0) { damage = 0; } // 确保伤害不为负数
+
+      monster.hp = monster.hp + damage;
+      await this.isDie(monster, '魔法攻击', damage);
     }
 
-    // 计算怪物实际伤害
-    let damage = userDefense - monsterDamage;
-
-    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
-
-    monster.hp = monster.hp + damage;
-
-    await this.isDie(monster, '魔法攻击', damage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态

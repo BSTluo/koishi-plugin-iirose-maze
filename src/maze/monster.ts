@@ -132,6 +132,7 @@ export class Monster
     // 计算怪物破盾能力(基础攻击力*护盾破坏值)
     let monsterShieldBreak = Math.trunc(this.physicalAttack * (1 + this.shieldBreak));
 
+
     if (minHpUser.blockStatus)
     {
       monsterDamage *= 0.5; // 如果怪物处于格挡状态，伤害减半
@@ -148,32 +149,37 @@ export class Monster
       return; // 直接返回，不进行后续计算
     }
 
-    // 计算用户物理防御
-    const userDefense = minHpUser.physicalDefense;
     // 计算用户护盾值
     const userShieldValue = minHpUser.shieldValue;
 
-    // 计算用户实际护盾值
-    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+    if (userShieldValue > 0)
+    {
+      // 计算用户实际护盾值
+      const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
+      if (userActualShieldValue <= 0)
+      {
+        minHpUser.shieldValue = 0;
+        await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
+        return;
+      } else if (this.basicShieldValue > 0)
+      {
+        await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+        return;
+      }
+    } else
     {
-      minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
-    } else if (this.basicShieldValue > 0)
-    {
-      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+      // 计算用户物理防御
+      const userDefense = minHpUser.physicalDefense;
+
+      let monsterShieldBreak = Math.trunc(this.physicalAttack * (0.5 + this.shieldBreak));
+      let damage = userDefense - monsterDamage + monsterShieldBreak;
+
+      if (damage > 0) { damage = 0; } // 确保伤害不为负数
+
+      minHpUser.hp = minHpUser.hp + damage;
+      await this.isDie(minHpUser, '物理攻击', damage);
     }
-
-    // 计算用户实际伤害
-    let damage = userDefense - monsterDamage;
-
-    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
-
-    minHpUser.hp = minHpUser.hp + damage;
-
-    await this.isDie(minHpUser, '物理攻击', damage);
-
   }
 
   // 魔法攻击
@@ -205,31 +211,38 @@ export class Monster
       return; // 直接返回，不进行后续计算
     }
 
-    // 计算用户魔法防御
-    const userDefense = minHpUser.magicDefense;
     // 计算用户护盾值
     const userShieldValue = minHpUser.shieldValue;
 
-    // 计算用户实际护盾值
-    const userActualShieldValue = userShieldValue - monsterShieldBreak;
+    if (userShieldValue > 0)
+    {
+      // 计算用户实际护盾值
+      const userActualShieldValue = userShieldValue - monsterShieldBreak;
 
-    if (userActualShieldValue <= 0 && this.basicShieldValue > 0)
+      if (userActualShieldValue <= 0)
+      {
+        minHpUser.shieldValue = 0;
+        await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理破盾${monsterShieldBreak}点，护盾清空。`]);
+        return;
+      } else if (this.basicShieldValue > 0)
+      {
+        await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用物理攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+        return;
+      }
+    } else
     {
-      minHpUser.shieldValue = 0;
-      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用魔法破盾${monsterShieldBreak}点，护盾清空。`]);
-    } else if (this.basicShieldValue > 0)
-    {
-      await minHpUser.session.send([h.at(minHpUser.id), `被 ${this.name} 使用魔法攻击${monsterShieldBreak}点，剩余护盾值：${minHpUser.shieldValue}。`]);
+      // 计算用户物理防御
+      const userDefense = minHpUser.physicalDefense;
+
+      let monsterShieldBreak = Math.trunc(this.physicalAttack * (0.5 + this.shieldBreak));
+      let damage = userDefense - monsterDamage + monsterShieldBreak;
+
+      if (damage > 0) { damage = 0; } // 确保伤害不为负数
+
+      minHpUser.hp = minHpUser.hp + damage;
+      await this.isDie(minHpUser, '魔法攻击', damage);
     }
 
-    // 计算用户实际伤害
-    let damage = userDefense - monsterDamage;
-
-    if (userActualShieldValue <= 0) { damage += userActualShieldValue; }
-
-    minHpUser.hp = minHpUser.hp + damage;
-
-    await this.isDie(minHpUser, '魔法攻击', damage);
   }
 
   blockStatus: boolean = false; // 是否处于格挡状态
