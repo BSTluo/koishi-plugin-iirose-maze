@@ -56,7 +56,7 @@ export class MazeGame
     for (let i = 0; i < this.monsterList.monsterList.length; i++)
     {
       const monster = this.monsterList.monsterList[i]; // 获取怪物信息
-      openingMessage += `${i + 1}. ${monster.name} HP：${monster.hp}\n`;
+      openingMessage += `${i + 1}. ${monster.name} HP：【${monster.hp}】护盾：【${monster.shieldValue}】\n`;
     }
 
     return openingMessage; // 返回怪物信息
@@ -66,7 +66,6 @@ export class MazeGame
   async start()
   {
     await this.session.send('游戏开始，请准备好！'); // 发送游戏开始消息
-    await this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
     await this.session.send([
       '请注意，游戏开始后，需要在规定时间内输入指令进行攻击。有如下的指令：\n',
       '物理攻击\n',
@@ -83,6 +82,7 @@ export class MazeGame
     {
       for (const user of this.userList.userObjList)
       {
+        await this.session.send('当前怪物信息：\n' + this.getMonsterInfo()); // 发送当前怪物信息
         await user.session.send([
           h.at(user.id),
           '请在10秒内输入指令以及攻击目标（如：物理攻击 1），超时将自动物理攻击第一位。'
@@ -113,6 +113,12 @@ export class MazeGame
         {
           action = inputBlockTemp[1]; // 获取动作
           target = 0; // 格挡和弹反没有目标，默认设置为0
+        }
+        
+        if (target < 0 || target >= this.monsterList.monsterList.length)
+        {
+          await user.session.send([h.at(user.id), '目标无效，自动进行物理攻击第一位。']);
+          target = 0; // 如果目标无效，默认设置为第一位
         }
 
         // console.log(`用户 ${user.id} 执行动作：${action}，目标：${target}`);
