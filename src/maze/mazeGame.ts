@@ -115,7 +115,7 @@ export class MazeGame
           target = 0; // 格挡和弹反没有目标，默认设置为0
         }
         
-        if (target < 0 || target >= this.monsterList.monsterList.length)
+        if (target < 0)
         {
           await user.session.send([h.at(user.id), '目标无效，自动进行物理攻击第一位。']);
           target = 0; // 如果目标无效，默认设置为第一位

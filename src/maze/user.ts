@@ -310,11 +310,11 @@ export class User
     {
       case '物理攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        await this.physicalAttackSkill(monsterList.monsterList[target]);
+        await this.physicalAttackSkill(monsterList.monsterList[who]);
         break;
       case '魔法攻击':
         if (who < 0 || who >= this.monsterList.monsterList.length) { who = 0; } // 确保目标在有效范围内
-        await this.magicAttackSkill(monsterList.monsterList[target]);
+        await this.magicAttackSkill(monsterList.monsterList[who]);
         break;
       case '格挡':
         await this.blockSkill();
@@ -324,7 +324,7 @@ export class User
         break;
       case '治愈':
         if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
-        await this.healingSkill(this.userList.userObjList[target]);
+        await this.healingSkill(this.userList.userObjList[who]);
         break;
       // case '道具使用':
       //   if (who < 0 || who >= this.userList.userObjList.length) { who = 0; }
