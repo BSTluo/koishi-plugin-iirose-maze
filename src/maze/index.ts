@@ -129,8 +129,9 @@ class Maze
 
       let userList = [];
 
-      for (let i = 0; i < party.members.length; i++) {
-        userList.push(`${i+1}.`)
+      for (let i = 0; i < party.members.length; i++)
+      {
+        userList.push(`${i + 1}.`);
         userList.push(h.at(party.members[i]));
         userList.push('\n');
       }
@@ -258,7 +259,7 @@ class Maze
       {
         party = this.mazeGameList[partyId].party;
       }
-      
+
       // 未完成，此处需要将整局游戏结束，包括投票结束之类的
       party.members = party.members.filter(member => member !== uid);
 
@@ -276,9 +277,49 @@ class Maze
         }
 
         await v.session.send([h.at(v.session.username), '因队伍无人，已解散']);
-      } else {
+      } else
+      {
         await this.ctx.database.set('mazeParty', { id: partyId }, { members: party.members });
       }
+    });
+
+    this.ctx.command('maze.assign <name:string> <point:number>', '分配属性点').alias('分配属性点').example('maze.assign 物理攻击 1').action(async (v, name, point) =>
+    {
+      const uid = v.session.userId;
+      const inputMagTemp = name.match(/(物理攻击|魔法攻击|治愈|道具使用)\s+(\d+)?/);
+      const inputBlockTemp = name.match(/(格挡|弹反)/);
+      let action: string;
+
+      if (!inputMagTemp && !inputBlockTemp)
+      {
+        await v.session.send([h.at(uid), '输入无效']);
+        return;
+      }
+
+      if (!point)
+      {
+        await v.session.send([h.at(uid), '请输入分配的属性点数']);
+        return;
+      }
+
+      const user = new User(uid, this.ctx, v.session);
+
+      if (user.attributePoints < point)
+      {
+        await v.session.send([h.at(uid), '属性点不足，无法分配', `当前属性点：${user.attributePoints}`]);
+        return;
+      }
+
+      user.attributePoints -= point;
+      user[name] += point;
+      const newData = {
+        id: uid,
+        attributePoints: user.attributePoints,
+      };
+      newData[name] = user[name];
+
+      await user.updateUserData(newData);
+      await v.session.send([h.at(uid), `属性点分配成功，当前属性点：${user.attributePoints}`]);     
     });
   }
 
@@ -299,14 +340,3 @@ class Maze
 }
 
 export default Maze;
-
-// 欸
-// 要不要整个局内金币
-// 在开局的时候可以使用金币购买一个方向的金币
-// 升级的属性点可以点在开局金币上
-
-// 分配属性点的命令
-
-
-// 重大bug：
-// user类的session来自userlist类的session，而userlist的session来自mazeGame类的session，最终他们都来自触发maze.start的session，无法做到多平台一起玩

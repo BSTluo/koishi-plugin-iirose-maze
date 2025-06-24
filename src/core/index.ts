@@ -69,12 +69,12 @@ class Core
         `魔法暴击率: ${user.magicCrit}\n`,
         `物理防御力: ${user.physicalDefense}\n`,
         `魔法防御力: ${user.magicDefense}\n`,
-        // `速度: ${user.speed}\n`,
         `治疗量: ${user.healingPower}\n`,
         `护盾值: ${user.shieldValue}\n`,
         `穿甲: ${user.shieldBreak}\n`,
         `经验值: ${user.exp}\n`,
-        `金币: ${user.money}\n`
+        `金币: ${user.money}\n\n\n`,
+        `待分配属性点：${user.attributePoints}\n`,
       ];
     });
   }
